@@ -15,3 +15,5 @@ Set Up
 * Set an env variable with a secret string: `export SECRET="thisisnotsosecretbutyougettheidea"`
 * Run `foreman start`
 * Go to localhost, typically on port 5000, unless the PORT variable has been set otherwise: `open http://localhost:5000`
+* Set the env varible for the Client ID on heroku: `heroku config:set GOOGLE_API_CLIENT_ID="12345yaddayaddayadda.apps.googleusercontent.com"`
+* And also set the secret: `heroku config:set SECRET="thisisnotsosecretbutyougettheidea"`
