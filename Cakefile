@@ -13,7 +13,7 @@ reset = '\x1B[0m'
 pkg = JSON.parse fs.readFileSync('./package.json')
 testCmd = pkg.scripts.test
 startCmd = pkg.scripts.start
-  
+
 
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
@@ -21,6 +21,15 @@ log = (message, color, explanation) ->
 # Compiles app.coffee and src directory to the .app directory
 build = (callback) ->
   options = ['-c','-b', '-o', 'lib', 'src']
+  cmd = which.sync 'coffee'
+  coffee = spawn cmd, options
+  coffee.stdout.pipe process.stdout
+  coffee.stderr.pipe process.stderr
+  coffee.on 'exit', (status) -> callback?() if status is 0
+
+# Compiles app.coffee and src directory to the .app directory
+build_client = (callback) ->
+  options = ['-c','-b', '-o', 'public/javascripts', 'client_src']
   cmd = which.sync 'coffee'
   coffee = spawn cmd, options
   coffee.stdout.pipe process.stdout
@@ -43,9 +52,9 @@ test = (callback) ->
     './lib/index'
   ]
   try
-    cmd = which.sync process.cwd() + '/node_modules/.bin/mocha' 
+    cmd = which.sync process.cwd() + '/node_modules/.bin/mocha'
     spec = spawn cmd, options
-    spec.stdout.pipe process.stdout 
+    spec.stdout.pipe process.stdout
     spec.stderr.pipe process.stderr
     spec.on 'exit', (status) -> callback?() if status is 0
   catch err
@@ -68,7 +77,11 @@ task 'docs', 'Generate annotated source code with Docco', ->
 
 
 task 'build', ->
-  build -> log ":)", green
+  build -> log "server side built :)", green
+  build_client -> log "client side built :)", green
+
+task 'build_client', ->
+  build_client -> log "8)", green
 
 task 'spec', 'Run Mocha tests', ->
   build -> test -> log ":)", green
@@ -79,7 +92,7 @@ task 'test', 'Run Mocha tests', ->
 task 'dev', 'start dev env', ->
   # watch_coffee
   options = ['-c', '-b', '-w', '-o', 'lib', 'src']
-  cmd = which.sync 'coffee'  
+  cmd = which.sync 'coffee'
   coffee = spawn cmd, options
   coffee.stdout.pipe process.stdout
   coffee.stderr.pipe process.stderr
@@ -88,19 +101,19 @@ task 'dev', 'start dev env', ->
   supervisor = spawn 'node', [
     './node_modules/supervisor/lib/cli-wrapper.js',
     '-w',
-    'lib,views', 
-    '-e', 
-    'js|jade', 
+    'lib,views',
+    '-e',
+    'js|jade',
     'server'
   ]
   supervisor.stdout.pipe process.stdout
   supervisor.stderr.pipe process.stderr
   log 'Watching js files and running server', green
-  
+
 task 'debug', 'start debug env', ->
   # watch_coffee
   options = ['-c', '-b', '-w', '-o', '.app', 'src']
-  cmd = which.sync 'coffee'  
+  cmd = which.sync 'coffee'
   coffee = spawn cmd, options
   coffee.stdout.pipe process.stdout
   coffee.stderr.pipe process.stderr
@@ -121,7 +134,7 @@ task 'debug', 'start debug env', ->
   chrome.stdout.pipe process.stdout
   chrome.stderr.pipe process.stderr
   log 'Debugging server', green
-  
+
 option '-n', '--name [NAME]', 'name of model to `scaffold`'
 task 'scaffold', 'scaffold model/controller/test', (options) ->
   if not options.name?
