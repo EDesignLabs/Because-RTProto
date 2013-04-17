@@ -19,7 +19,7 @@ define ["realtime-client-utils"], (util)->
     model.getRoot().set "notes", notes
     notes.push note
 
-  
+
   ###
   This function is called when the Realtime file has been loaded. It should
   be used to initialize any user interface components and event handlers
@@ -30,7 +30,7 @@ define ["realtime-client-utils"], (util)->
   onFileLoaded = (doc) ->
     model = doc.getModel();
     notes = model.getRoot().get("notes")
-    
+
     # Keeping one box updated with a String binder.
     title = $("#title")
     desc = $("#desc")
@@ -46,11 +46,11 @@ define ["realtime-client-utils"], (util)->
 
       $.each notes.asArray(), (index, note)->
         noteElement = $ """<div id="note-#{note.id}" class="note"><h2>#{note.get('title')}</h2></div>"""
-        
-        noteItemElement = $ """<div id="note-item-#{note.id}" class="note-item">
+
+        noteItemElement = $ """<li id="note-item-#{note.id}" class="note-item">
           <h2><a href="#{note.get('url')}">#{note.get('title')}</a></h2>
-          <p>#{note.get('desc')}</p></div>"""
-        
+          <p>#{note.get('desc')}</p></li>"""
+
         noteElement.draggable
           stop: ->
             x = $(@).offset().left
@@ -62,12 +62,12 @@ define ["realtime-client-utils"], (util)->
 
         noteItemElement.click (e)->
           $("#note-#{note.id}").animate(
-            backgroundColor: '#ff0'            
+            backgroundColor: '#ff0'
           , 200).animate(
-            backgroundColor: '#fff'            
+            backgroundColor: '#fff'
           , 200)
 
-        
+
         notesElement.append noteElement
         notesListElement.append noteItemElement
 
@@ -106,41 +106,43 @@ define ["realtime-client-utils"], (util)->
         desc: desc.val()
         url: url.val()
       notes.push newNote
+      preventDefault()
+      false
 
     notesChanged()
     collaboratorsChanged()
 
   realtimeOptions =
-    
+
     ###
     Options for the Realtime loader.
     ###
-    
+
     ###
     Client ID from the APIs Console.
     ###
     clientId: window.GOOGLE_API_CLIENT_ID
-    
+
     ###
     The ID of the button to click to authorize. Must be a DOM element ID.
     ###
     authButtonElementId: "authorizeButton"
-    
+
     ###
     Function to be called when a Realtime model is first created.
     ###
     initializeModel: initializeModel
-    
+
     ###
     Autocreate files right after auth automatically.
     ###
     autoCreate: true
-    
+
     ###
     Autocreate files right after auth automatically.
     ###
     defaultTitle: "New Realtime Quickstart File"
-    
+
     ###
     Function to be called every time a Realtime file is loaded.
     ###
@@ -148,7 +150,7 @@ define ["realtime-client-utils"], (util)->
 
   return {
     rtclient: new util.RTClient(window)
-    
+
     ###
     Start the Realtime loader with the options.
     ###

@@ -20,35 +20,7 @@
   <script data-main="javascripts/main" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.5/require.min.js"></script>
 
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
-
-  <style>
-    #notes {
-      height:500px;
-    }
-    .collaborator {
-      padding: 5px;
-      color: white;
-    }
-
-    .note {
-      width: 150px;
-      height: 30px;
-      border: 1px solid #eee;
-      padding: 5px;
-    }
-
-    .note h2 {
-      font-size: 1em;
-      line-height: 1em;
-    }
-
-    .note-item h2 {
-      font-size: 1.5em;
-      line-height: 1.5em;
-    }
-
-
-  </style>
+  <link href="/stylesheets/style.css" rel="stylesheet">
 
 </head>
 
@@ -71,13 +43,11 @@
     <div class="row">
       <div id="notes" class="span8"></div>
       <div id="note-creator" class="span4">
-        <form>
-          <label for="title">Title</label><input id="title" name="title">
-          <label for="url">URL</label><input id="url" name="url">
-          <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
-          <button id="add-note" class="btn">Add</button>
-        </form>
-        <div id="notes-list"></div>
+        <label for="title">Title</label><input id="title" name="title">
+        <label for="url">URL</label><input id="url" name="url">
+        <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
+        <button id="add-note" class="btn">Add</button>
+        <ul id="notes-list"></ul>
       </div>
     </div>
 

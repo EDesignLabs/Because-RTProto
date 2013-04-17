@@ -27,6 +27,14 @@ build = (callback) ->
   coffee.stderr.pipe process.stderr
   coffee.on 'exit', (status) -> callback?() if status is 0
 
+build_stylus = (callback) ->
+  options = ['public/stylesheets', '-o', 'public/stylesheets']
+  cmd = './node_modules/.bin/stylus'
+  stylus = spawn cmd, options
+  stylus.stdout.pipe process.stdout
+  stylus.stderr.pipe process.stderr
+  stylus.on 'exit', (status) -> callback?() if status is 0
+
 # Compiles app.coffee and src directory to the .app directory
 build_client = (callback) ->
   options = ['-c','-b', '-o', 'public/javascripts', 'client_src']
@@ -79,9 +87,13 @@ task 'docs', 'Generate annotated source code with Docco', ->
 task 'build', ->
   build -> log "server side built :)", green
   build_client -> log "client side built :)", green
+  build_stylus -> log "styles built :)", green
 
 task 'build_client', ->
   build_client -> log "8)", green
+
+task 'build_stylus', ->
+  build_stylus -> log "8)", green
 
 task 'spec', 'Run Mocha tests', ->
   build -> test -> log ":)", green
