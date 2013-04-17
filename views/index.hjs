@@ -1,168 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>{{ title }}</title>
   <meta http-equiv="X-UA-Compatible" content="IE=9">
 
   <!-- Load the basic libraries. -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
 
   <!-- Load the Realtime libraries. -->
+  <script>
+    window.GOOGLE_API_CLIENT_ID = "{{ clientId }}";
+  </script>
   <script type="text/javascript"
           src="https://apis.google.com/js/api.js"></script>
-
-  <!-- Load the utility library. -->
-  <script type="text/javascript"
-          src="javascripts/realtime-client-utils.js"></script>
 
   <script data-main="javascripts/main" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.5/require.min.js"></script>
 
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
 
+  <style>
+    #notes {
+      height:500px;
+    }
+    .collaborator {
+      padding: 5px;
+      color: white;
+    }
+
+    .note {
+      width: 150px;
+      height: 30px;
+      border: 1px solid #eee;
+      padding: 5px;
+    }
+
+    .note h2 {
+      font-size: 1em;
+      line-height: 1em;
+    }
+
+    .note-item h2 {
+      font-size: 1.5em;
+      line-height: 1.5em;
+    }
+
+
+  </style>
+
 </head>
 
 <!-- Start Realtime when the body has loaded. -->
 <body>
+  <div class="container">
+    <div class="row">
+      <div class="span4">
+        <h1>{{ title }}</h1>
+      </div>
 
-  <h1>{{ title }} :: Drive Realtime API :: quickstart</h1>
+      <div class="span4">
+        <button id="authorizeButton" class="btn" disabled>You must authorize</button>
+      </div>
 
-  <button id="authorizeButton" disabled>You must authorize</button>
+      <div id="collaborators" class="span4">
+      </div>
+    </div>
 
-  <p>These text areas are on the same page. You can also <a target="_blank" href="#">open them on separate users'
-  browsers</a> and they will remain synchronized.</p>
+    <div class="row">
+      <div id="notes" class="span8"></div>
+      <div id="note-creator" class="span4">
+        <form>
+          <label for="title">Title</label><input id="title" name="title">
+          <label for="url">URL</label><input id="url" name="url">
+          <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
+          <button id="add-note" class="btn">Add</button>
+        </form>
+        <div id="notes-list"></div>
+      </div>
+    </div>
 
-  <!-- Text areas that will be used as our collaborative controls. -->
-  <textarea id="editor1" rows="15" cols="50" disabled="true"></textarea>
-  <textarea id="editor2" rows="15" cols="50" disabled="true"></textarea>
+  </div>
 
-  <input id="year1" disabled="true">
-  <input id="year2" disabled="true">
-
-  <script>
-
-    $(document).ready( function () {
-      (function ($) {
-        /**
-         * This function is called the first time that the Realtime model is created
-         * for a file. This function should be used to initialize any values of the
-         * model. In this case, we just create the single string model that will be
-         * used to control our text box. The string has a starting value of 'Hello
-         * Realtime World!', and is named 'text'.
-         * @param model {gapi.drive.realtime.Model} the Realtime root model object.
-         */
-        var initializeModel = function (model) {
-            var summary = model.createString('Hello Realtime World!'),
-              year = model.createString('1945');
-
-            model.getRoot().set('summary', summary);
-            model.getRoot().set('year', year);
-          },
-
-          /**
-           * This function is called when the Realtime file has been loaded. It should
-           * be used to initialize any user interface components and event handlers
-           * depending on the Realtime model. In this case, create a text control binder
-           * and bind it to our string model that we created in initializeModel.
-           * @param doc {gapi.drive.realtime.Document} the Realtime document.
-           */
-          onFileLoaded = function (doc) {
-            var summary = doc.getModel().getRoot().get('summary'),
-              year = doc.getModel().getRoot().get('year');
-
-            // Keeping one box updated with a String binder.
-            var textArea1 = $('#editor1'),
-              year1 = $('#year1');
-              gapi.drive.realtime.databinding.bindString(summary, textArea1[0]);
-              gapi.drive.realtime.databinding.bindString(year, year1[0]);
-
-            // Keeping one box updated with a custom EventListener.
-            var textArea2 = $('#editor2'),
-              year2 = $('#year2'),
-              updateTextArea2 = function(e) {
-                textArea2.val(summary);
-              },
-              updateYear2 = function(e) {
-                year2.val(year);
-              };
-
-            summary.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, updateTextArea2);
-            summary.addEventListener(gapi.drive.realtime.EventType.TEXT_DELETED, updateTextArea2);
-
-            year.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, updateYear2);
-            year.addEventListener(gapi.drive.realtime.EventType.TEXT_DELETED, updateYear2);
-
-            textArea2.onkeyup = function() {
-              summary.setText(textArea2.val());
-            };
-
-            year2.onkeyup = function() {
-              year2.setText(year2.val());
-            };
-
-            updateTextArea2();
-            updateYear2();
-
-            // Enabling UI Elements.
-            textArea1.prop('disabled', false);
-            textArea2.prop('disabled', false);
-
-            year1.prop('disabled', false);
-            year2.prop('disabled', false);
-
-          },
-
-          /**
-           * Options for the Realtime loader.
-           */
-          realtimeOptions = {
-            /**
-             * Client ID from the APIs Console.
-             */
-            clientId: '{{ clientId }}',
-
-            /**
-             * The ID of the button to click to authorize. Must be a DOM element ID.
-             */
-            authButtonElementId: 'authorizeButton',
-
-            /**
-             * Function to be called when a Realtime model is first created.
-             */
-            initializeModel: initializeModel,
-
-            /**
-             * Autocreate files right after auth automatically.
-             */
-            autoCreate: true,
-
-            /**
-             * Autocreate files right after auth automatically.
-             */
-            defaultTitle: "New Realtime Quickstart File",
-
-            /**
-             * Function to be called every time a Realtime file is loaded.
-             */
-            onFileLoaded: onFileLoaded
-          },
-
-          rtclient = new RTClient(window),
-
-          /**
-           * Start the Realtime loader with the options.
-           */
-          startRealtime = function (rtclient) {
-            var realtimeLoader = rtclient.getRealtimeLoader(realtimeOptions);
-            realtimeLoader.start();
-          };
-
-        startRealtime(rtclient);
-
-      }(jQuery))
-    });
-
-  </script>
 </body>
 </html>
