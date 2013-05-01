@@ -152,9 +152,7 @@ define(["realtime-client-utils"], function(util) {
       var collaborators, collaboratorsElement;
       collaboratorsElement = $("#collaborators");
       collaboratorsElement.empty();
-      collaborators = _.uniq(doc.getCollaborators(), true, function(item) {
-        return item.id;
-      });
+      collaborators = doc.getCollaborators();
       return $.each(collaborators, function(index, collaborator) {
         var collaboratorElement;
         collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + "\">" + collaborator.displayName + "</span>";
@@ -164,7 +162,7 @@ define(["realtime-client-utils"], function(util) {
     notes.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, notesChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
-    addNoteButton.click(function() {
+    addNoteButton.click(function(e) {
       var newNote;
       newNote = doc.getModel().createMap({
         title: title.val(),
@@ -172,6 +170,7 @@ define(["realtime-client-utils"], function(util) {
         url: url.val()
       });
       notes.push(newNote);
+      e.preventDefault();
       return false;
     });
     notesChanged();

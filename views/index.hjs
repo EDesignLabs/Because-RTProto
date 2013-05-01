@@ -46,10 +46,12 @@
     <div class="row">
       <svg id="notes" class="span8"></svg>
       <div id="note-creator" class="span4">
-        <label for="title">Title</label><input id="title" name="title">
-        <label for="url">URL</label><input id="url" name="url">
-        <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
-        <button id="add-note" class="btn">Add</button>
+        <form>
+          <label for="title">Title</label><input id="title" name="title">
+          <label for="url">URL</label><input id="url" name="url">
+          <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
+          <button id="add-note" class="btn">Add</button>
+        </form>
         <ul id="notes-list"></ul>
       </div>
     </div>

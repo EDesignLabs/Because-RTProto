@@ -157,7 +157,7 @@ define ["realtime-client-utils"], (util)->
       collaboratorsElement = $ "#collaborators"
       collaboratorsElement.empty()
 
-      collaborators = _.uniq doc.getCollaborators(), true, (item)-> item.id
+      collaborators = doc.getCollaborators()
 
       $.each collaborators, (index, collaborator)->
         collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color}">#{collaborator.displayName}</span>"""
@@ -168,12 +168,13 @@ define ["realtime-client-utils"], (util)->
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
-    addNoteButton.click ->
+    addNoteButton.click (e)->
       newNote = doc.getModel().createMap
         title: title.val()
         desc: desc.val()
         url: url.val()
       notes.push newNote
+      e.preventDefault()
       false
 
     notesChanged()
