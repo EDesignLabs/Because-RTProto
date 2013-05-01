@@ -14,6 +14,8 @@ define ["realtime-client-utils"], (util)->
       url: "http://google.com"
       x: 0
       y: 0
+      hx: 0
+      hy: 0
       positioned: true
     notes = model.createList()
     model.getRoot().set "notes", notes
@@ -38,42 +40,108 @@ define ["realtime-client-utils"], (util)->
     addNoteButton = $("#add-note")
 
     notesChanged = (e) ->
-      notesElement = $ '#notes'
-      notesElement.empty()
+      notesElement = d3.select '#notes'
+      notesElement.selectAll('*').each (d,i)->
+        d3.select(this).remove()
 
       notesListElement = $ '#notes-list'
       notesListElement.empty()
 
       $.each notes.asArray(), (index, note)->
-        noteElement = $ """<div id="note-#{note.id}" class="note"><h2>#{note.get('title')}</h2></div>"""
+        noteElement = notesElement.append 'g'
+        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 100)
+        noteElement.append('text').attr('style','fill:red;stroke:none').text note.get 'title'
+        noteElement.attr 'id', note.id
+        noteElement.attr 'x', 0
+        noteElement.attr 'y', 0
+        noteElement.attr 'fill', '#fff'
+        noteElement.attr 'stroke', 'black'
+        noteElement.attr 'transform', "matrix(1 0 0 1 #{note.get('x')} #{note.get('y')})"
+
+        lineGroupElement = noteElement.append 'g'
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get 'hx').attr('y2', note.get 'hy')
+        lineElement.attr 'stroke', 'black'
+        lineElement.attr 'strokeWidth', 3
+        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get 'hx').attr('cy', note.get 'hy')
+        handleElement.attr 'stroke', 'black'
+        handleElement.attr 'strokeWidth', 3
+
+        noteRectElement.on 'mousedown', (d,i)->
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ')
+          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - matrix[4]
+          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - matrix[5]
+          noteRectElement.on 'mousemove', (d,i)->
+            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX
+            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY
+            noteElement.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
+
+        noteRectElement.on 'mouseup', (d,i)->
+          noteRectElement.on 'mousemove', null
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ')
+          model.beginCompoundOperation()
+          note.set 'x', matrix[4]
+          note.set 'y', matrix[5]
+          model.endCompoundOperation()
+
+        noteRectElement.on 'mouseout', (d,i)->
+          noteRectElement.on 'mousemove', null
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ')
+          model.beginCompoundOperation()
+          note.set 'x', matrix[4]
+          note.set 'y', matrix[5]
+          model.endCompoundOperation()
+
+
+        handleElement.on 'mousedown', (d,i)->
+          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - handleElement.attr('cx')
+          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - handleElement.attr('cy')
+          handleElement.on 'mousemove', (d,i)->
+            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX
+            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY
+            handleElement.attr 'cx', x
+            handleElement.attr 'cy', y
+            lineElement.attr 'x2', x
+            lineElement.attr 'y2', y
+
+        handleElement.on 'mouseup', (d,i)->
+          handleElement.on 'mousemove', null
+          model.beginCompoundOperation()
+          note.set 'hx', handleElement.attr 'cx'
+          note.set 'hy', handleElement.attr 'cy'
+          model.endCompoundOperation()
+
+        handleElement.on 'mouseout', (d,i)->
+          handleElement.on 'mousemove', null
+          model.beginCompoundOperation()
+          note.set 'hx', handleElement.attr 'cx'
+          note.set 'hy', handleElement.attr 'cy'
+          model.endCompoundOperation()
+
 
         noteItemElement = $ """<li id="note-item-#{note.id}" class="note-item">
           <h2><a href="#{note.get('url')}">#{note.get('title')}</a></h2>
           <p>#{note.get('desc')}</p></li>"""
 
-        noteElement.draggable
-          stop: ->
-            x = $(@).offset().left
-            y = $(@).offset().top
-            model.beginCompoundOperation()
-            note.set 'x', x
-            note.set 'y', y
-            model.endCompoundOperation()
+        # noteElement.draggable
+        #   stop: ->
+        #     x = $(@).offset().left
+        #     y = $(@).offset().top
+        #     model.beginCompoundOperation()
+        #     note.set 'x', x
+        #     note.set 'y', y
+        #     model.endCompoundOperation()
 
         noteItemElement.click (e)->
-          $("#note-#{note.id}").animate(
-            backgroundColor: '#ff0'
-          , 200).animate(
-            backgroundColor: '#fff'
-          , 200)
+          noteElement.transition().duration(100).attr('fill', '#ff0')
+          noteElement.transition().delay(500).duration(500).attr('fill', '#fff')
 
 
-        notesElement.append noteElement
+        # notesElement.append noteElement
         notesListElement.append noteItemElement
 
-        noteElement.offset
-          left: note.get('x') || 0
-          top: note.get('y') || 0
+        # noteElement.offset
+        #   left: note.get('x') || 0
+        #   top: note.get('y') || 0
 
         if e and note.id is e.target.id
           collaborators = _.filter doc.getCollaborators(), (item)->
@@ -106,7 +174,6 @@ define ["realtime-client-utils"], (util)->
         desc: desc.val()
         url: url.val()
       notes.push newNote
-      preventDefault()
       false
 
     notesChanged()

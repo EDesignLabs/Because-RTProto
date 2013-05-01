@@ -97,7 +97,6 @@ define(function() {
           i++;
         }
       }
-      console.log(params);
       return params;
     };
 
@@ -116,7 +115,6 @@ define(function() {
       if (typeof value === 'undefined') {
         console.error(key + " should be present in the options.");
       }
-      console.log(value);
       return value;
     };
 
@@ -367,13 +365,12 @@ define(function() {
         }
       };
       authorizeWithPopup = function() {
-        gapi.auth.authorize({
+        return gapi.auth.authorize({
           client_id: clientId,
           scope: [_this.rtclient.INSTALL_SCOPE, _this.rtclient.FILE_SCOPE, _this.rtclient.OPENID_SCOPE],
           user_id: userId,
           immediate: false
         }, handleAuthResult);
-        return console.log(clientId);
       };
       return gapi.auth.authorize({
         client_id: clientId,

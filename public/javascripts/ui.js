@@ -19,6 +19,8 @@ define(["realtime-client-utils"], function(util) {
       url: "http://google.com",
       x: 0,
       y: 0,
+      hx: 0,
+      hy: 0,
       positioned: true
     });
     notes = model.createList();
@@ -43,38 +45,94 @@ define(["realtime-client-utils"], function(util) {
     addNoteButton = $("#add-note");
     notesChanged = function(e) {
       var notesElement, notesListElement;
-      notesElement = $('#notes');
-      notesElement.empty();
+      notesElement = d3.select('#notes');
+      notesElement.selectAll('*').each(function(d, i) {
+        return d3.select(this).remove();
+      });
       notesListElement = $('#notes-list');
       notesListElement.empty();
       return $.each(notes.asArray(), function(index, note) {
-        var author, authorColor, authorElement, collaborators, noteElement, noteItemElement, _ref, _ref1;
-        noteElement = $("<div id=\"note-" + note.id + "\" class=\"note\"><h2>" + (note.get('title')) + "</h2></div>");
-        noteItemElement = $("<li id=\"note-item-" + note.id + "\" class=\"note-item\">\n<h2><a href=\"" + (note.get('url')) + "\">" + (note.get('title')) + "</a></h2>\n<p>" + (note.get('desc')) + "</p></li>");
-        noteElement.draggable({
-          stop: function() {
+        var author, authorColor, authorElement, collaborators, handleElement, lineElement, lineGroupElement, noteElement, noteItemElement, noteRectElement, _ref, _ref1;
+        noteElement = notesElement.append('g');
+        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 100);
+        noteElement.append('text').attr('style', 'fill:red;stroke:none').text(note.get('title'));
+        noteElement.attr('id', note.id);
+        noteElement.attr('x', 0);
+        noteElement.attr('y', 0);
+        noteElement.attr('fill', '#fff');
+        noteElement.attr('stroke', 'black');
+        noteElement.attr('transform', "matrix(1 0 0 1 " + (note.get('x')) + " " + (note.get('y')) + ")");
+        lineGroupElement = noteElement.append('g');
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx')).attr('y2', note.get('hy'));
+        lineElement.attr('stroke', 'black');
+        lineElement.attr('strokeWidth', 3);
+        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx')).attr('cy', note.get('hy'));
+        handleElement.attr('stroke', 'black');
+        handleElement.attr('strokeWidth', 3);
+        noteRectElement.on('mousedown', function(d, i) {
+          var matrix, offsetX, offsetY;
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
+          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - matrix[4];
+          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - matrix[5];
+          return noteRectElement.on('mousemove', function(d, i) {
             var x, y;
-            x = $(this).offset().left;
-            y = $(this).offset().top;
-            model.beginCompoundOperation();
-            note.set('x', x);
-            note.set('y', y);
-            return model.endCompoundOperation();
-          }
+            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX;
+            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY;
+            return noteElement.attr('transform', "matrix(1 0 0 1 " + x + " " + y + ")");
+          });
         });
+        noteRectElement.on('mouseup', function(d, i) {
+          var matrix;
+          noteRectElement.on('mousemove', null);
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
+          model.beginCompoundOperation();
+          note.set('x', matrix[4]);
+          note.set('y', matrix[5]);
+          return model.endCompoundOperation();
+        });
+        noteRectElement.on('mouseout', function(d, i) {
+          var matrix;
+          noteRectElement.on('mousemove', null);
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
+          model.beginCompoundOperation();
+          note.set('x', matrix[4]);
+          note.set('y', matrix[5]);
+          return model.endCompoundOperation();
+        });
+        handleElement.on('mousedown', function(d, i) {
+          var offsetX, offsetY;
+          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - handleElement.attr('cx');
+          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - handleElement.attr('cy');
+          return handleElement.on('mousemove', function(d, i) {
+            var x, y;
+            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX;
+            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY;
+            handleElement.attr('cx', x);
+            handleElement.attr('cy', y);
+            lineElement.attr('x2', x);
+            return lineElement.attr('y2', y);
+          });
+        });
+        handleElement.on('mouseup', function(d, i) {
+          handleElement.on('mousemove', null);
+          model.beginCompoundOperation();
+          note.set('hx', handleElement.attr('cx'));
+          note.set('hy', handleElement.attr('cy'));
+          return model.endCompoundOperation();
+        });
+        handleElement.on('mouseout', function(d, i) {
+          handleElement.on('mousemove', null);
+          model.beginCompoundOperation();
+          note.set('hx', handleElement.attr('cx'));
+          note.set('hy', handleElement.attr('cy'));
+          return model.endCompoundOperation();
+        });
+        noteItemElement = $("<li id=\"note-item-" + note.id + "\" class=\"note-item\">\n<h2><a href=\"" + (note.get('url')) + "\">" + (note.get('title')) + "</a></h2>\n<p>" + (note.get('desc')) + "</p></li>");
         noteItemElement.click(function(e) {
-          return $("#note-" + note.id).animate({
-            backgroundColor: '#ff0'
-          }, 200).animate({
-            backgroundColor: '#fff'
-          }, 200);
+          noteElement.transition().duration(100).attr('fill', '#ff0');
+          return noteElement.transition().delay(500).duration(500).attr('fill', '#fff');
         });
-        notesElement.append(noteElement);
         notesListElement.append(noteItemElement);
-        noteElement.offset({
-          left: note.get('x') || 0,
-          top: note.get('y') || 0
-        });
         if (e && note.id === e.target.id) {
           collaborators = _.filter(doc.getCollaborators(), function(item) {
             return item.userId === e.userId && !item.isMe;
@@ -114,7 +172,6 @@ define(["realtime-client-utils"], function(util) {
         url: url.val()
       });
       notes.push(newNote);
-      preventDefault();
       return false;
     });
     notesChanged();

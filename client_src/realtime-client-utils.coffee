@@ -79,7 +79,6 @@ define ->
           paramStr = paramStrs[i].split("=")
           params[paramStr[0]] = unescape(paramStr[1])
           i++
-      console.log params
       params
 
     ###
@@ -92,7 +91,6 @@ define ->
     getOption: (options, key, defaultValue) ->
       value = (if typeof options[key] is 'undefined' then defaultValue else options[key])
       console.error key + " should be present in the options."  if typeof value is 'undefined'
-      console.log value
       value
 
 
@@ -304,7 +302,6 @@ define ->
           user_id: userId
           immediate: false
         , handleAuthResult
-        console.log clientId
 
 
       # Try with no popups first.
