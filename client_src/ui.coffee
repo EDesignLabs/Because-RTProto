@@ -39,7 +39,6 @@ define ["realtime-client-utils"], (util)->
 
     notesChanged = (e) ->
       notesElement = d3.select '#notes'
-      debugger
       notesElement.selectAll('*').each (d,i)->
         d3.select(this).remove()
 
@@ -70,6 +69,13 @@ define ["realtime-client-utils"], (util)->
 
         noteElement.on 'mouseup', (d,i)->
           noteElement.on 'mousemove', null
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ')
+          console.log 'start'
+          model.beginCompoundOperation()
+          note.set 'x', matrix[4]
+          note.set 'y', matrix[5]
+          model.endCompoundOperation()
+          console.log 'end'
         
         noteElement.on 'mouseout', (d,i)->
           noteElement.on 'mousemove', null

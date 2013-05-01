@@ -44,7 +44,6 @@ define(["realtime-client-utils"], function(util) {
     notesChanged = function(e) {
       var notesElement, notesListElement;
       notesElement = d3.select('#notes');
-      debugger;
       notesElement.selectAll('*').each(function(d, i) {
         return d3.select(this).remove();
       });
@@ -75,7 +74,15 @@ define(["realtime-client-utils"], function(util) {
           });
         });
         noteElement.on('mouseup', function(d, i) {
-          return noteElement.on('mousemove', null);
+          var matrix;
+          noteElement.on('mousemove', null);
+          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
+          console.log('start');
+          model.beginCompoundOperation();
+          note.set('x', matrix[4]);
+          note.set('y', matrix[5]);
+          model.endCompoundOperation();
+          return console.log('end');
         });
         noteElement.on('mouseout', function(d, i) {
           return noteElement.on('mousemove', null);
