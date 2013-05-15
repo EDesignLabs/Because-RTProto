@@ -8,18 +8,11 @@ define ["realtime-client-utils"], (util)->
   @param model {gapi.drive.realtime.Model} the Realtime root model object.
   ###
   initializeModel = (model) ->
-    note = model.createMap
-      title: "The Title 2"
-      desc: "The Description 2"
-      url: "http://google.com"
-      x: 0
-      y: 0
-      hx: 0
-      hy: 0
-      positioned: true
     notes = model.createList()
-    model.getRoot().set "notes", notes
-    notes.push note
+    context = model.createMap
+      notes: notes
+      background: "http://developers.mozilla.org/files/2917/fxlogo.png"
+    model.getRoot().set "context", context
 
 
   ###
@@ -31,18 +24,33 @@ define ["realtime-client-utils"], (util)->
   ###
   onFileLoaded = (doc) ->
     model = doc.getModel();
-    notes = model.getRoot().get("notes")
+    notes = model.getRoot().get("context").get "notes"
+    context = model.getRoot().get("context")
 
     # Keeping one box updated with a String binder.
     title = $("#title")
     desc = $("#desc")
     url = $("#url")
+    image_url = $("#image-url")
     addNoteButton = $("#add-note")
+    addContextButton = $("#add-context")
+    displayNoteCreator = $('#display-note-creator')
+    displayContextCreator = $('#display-context-creator')
     activeElement = null
     offsetX = 0
     offsetY = 0
 
-    notesChanged = (e) ->
+    backgroundChanged = (rtEvent) ->
+      notesElement = d3.select '#notes'
+
+      contextElement = notesElement.insert "image", ":first-child"
+      contextElement.attr 'xlink:href', context.get 'background'
+      contextElement.attr 'x', "0"
+      contextElement.attr 'y', "0"
+      contextElement.attr 'height', "100%"
+      contextElement.attr 'width', "100%"
+
+    notesChanged = (rtEvent) ->
       notesElement = d3.select '#notes'
       notesElement.selectAll('*').each (d,i)->
         d3.select(this).remove()
@@ -60,7 +68,12 @@ define ["realtime-client-utils"], (util)->
             y = if matrix[5] isnt 'NaN' then parseInt matrix[5],10 else 0
             offsetX = d3.event.clientX - activeElement.node().offsetLeft - x
             offsetY = d3.event.clientY - activeElement.node().offsetTop - y
+
           if type is 'handle'
+            parentElement = d3.select activeElement.node().parentNode
+            grandParentElement = d3.select parentElement.node().parentNode
+            lineElement = parentElement.select('line')
+            lineElement.attr 'opacity', 1.0
             offsetX = d3.event.clientX - activeElement.node().offsetLeft - activeElement.attr('cx')
             offsetY = d3.event.clientY - activeElement.node().offsetTop - activeElement.attr('cy')
 
@@ -70,11 +83,11 @@ define ["realtime-client-utils"], (util)->
         note = notes.get parseInt activeElement.attr('data-index'),10 if activeElement and activeElement.attr 'data-index'
 
         if note
-          if type is 'note-rect'
-            parentElement = d3.select activeElement.node().parentNode
-            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
-            y = d3.event.clientY - activeElement.node().offsetTop - offsetY
-            parentElement.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
+          # if type is 'note-rect'
+          #   parentElement = d3.select activeElement.node().parentNode
+          #   x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
+          #   y = d3.event.clientY - activeElement.node().offsetTop - offsetY
+          #   parentElement.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
           if type is 'handle'
             parentElement = d3.select activeElement.node().parentNode
             lineElement = parentElement.select('line')
@@ -95,7 +108,15 @@ define ["realtime-client-utils"], (util)->
             matrix = parentElement.attr('transform').slice(7, -1).split(' ')
             note.set 'x', matrix[4]
             note.set 'y', matrix[5]
+            #invert selection
+            lineElement = parentElement.select('line')
+            lineElement.attr 'opacity', if note.get 'selected' then 0.0 else 1.0
+            note.set 'selected', (not note.get 'selected')
           if type is 'handle'
+            parentElement = d3.select activeElement.node().parentNode
+            grandParentElement = d3.select parentElement.node().parentNode
+            lineElement = parentElement.select('line')
+            lineElement.attr 'opacity', if note.get 'selected' then 1.0 else 0.0
             note.set 'hx', activeElement.attr 'cx'
             note.set 'hy', activeElement.attr 'cy'
 
@@ -104,12 +125,8 @@ define ["realtime-client-utils"], (util)->
 
         activeElement = null
 
-      notesListElement = $ '#notes-list'
-      notesListElement.empty()
-
       $.each notes.asArray(), (index, note)->
         noteElement = notesElement.append 'g'
-        noteElement.append('text').attr('style','fill:red;stroke:none').text note.get 'title'
         noteElement.attr 'id', note.id
         noteElement.attr 'x', 0
         noteElement.attr 'y', 0
@@ -119,15 +136,29 @@ define ["realtime-client-utils"], (util)->
         noteElement.attr 'stroke', 'black'
         noteElement.attr 'transform', "matrix(1 0 0 1 #{note.get('x')} #{note.get('y')})"
 
-        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 100)
+        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50)
         noteRectElement.attr 'data-type', 'note-rect'
         noteRectElement.attr 'data-index', index
+
+        titleElement = noteElement.append('text').text note.get 'title'
+        titleElement.attr 'style','fill:black;stroke:none'
+        titleElement.attr 'x', 5
+        titleElement.attr 'y', 15
+        titleElement.attr 'font-size', 12
+        descElement = noteElement.append('text').text note.get 'desc'
+        descElement.attr('style','fill:blue;stroke:none')
+        descElement.attr 'x', 5
+        descElement.attr 'y', 30
+        descElement.attr 'width', 50
+        descElement.attr 'height', 'auto'
+        descElement.attr 'font-size', 8
 
         lineGroupElement = noteElement.append 'g'
 
         lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 50)
         lineElement.attr 'stroke', 'black'
         lineElement.attr 'strokeWidth', 2
+        lineElement.attr 'opacity', if note.get 'selected' then 0.0 else 1.0
 
         handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx') || 200).attr('cy', note.get('hy') || 50)
         handleElement.attr 'stroke', 'black'
@@ -143,17 +174,16 @@ define ["realtime-client-utils"], (util)->
           noteElement.transition().duration(100).attr('fill', '#ff0')
           noteElement.transition().delay(500).duration(500).attr('fill', '#fff')
 
-        notesListElement.append noteItemElement
-
-        if e and note.id is e.target.id
+        if rtEvent?.target?.id is note.id
           collaborators = _.filter doc.getCollaborators(), (item)->
-            item.userId is e.userId and not item.isMe
-          author = collaborators[0]?.displayName
-          authorColor = collaborators[0]?.color
-          authorElement = $ """<span class="collaborator" style="display: none; background-color: #{authorColor}; color: white;">#{author}</span>"""
-          noteElement.append authorElement
-          authorElement.fadeIn()
-          _.delay (-> authorElement.fadeOut()), 2000
+            item.userId is rtEvent.userId and not item.isMe
+          if collaborators.length > 0
+            author = collaborators[0]?.displayName
+            authorColor = collaborators[0]?.color
+            authorElement = $ """<span class="collaborator" style="display: none; background-color: #{authorColor}; color: white;">#{author}</span>"""
+            noteElement.append authorElement
+            authorElement.fadeIn()
+            _.delay (-> authorElement.fadeOut()), 2000
 
     collaboratorsChanged = (e) ->
       collaboratorsElement = $ "#collaborators"
@@ -167,18 +197,38 @@ define ["realtime-client-utils"], (util)->
 
 
     notes.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, notesChanged
+    context.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, backgroundChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
+    displayNoteCreator.click (e)->
+      $("#note-creator").show()
+
+    displayContextCreator.click (e)->
+      $("#context-creator").show()
+
     addNoteButton.click (e)->
+      if notes.length > 0
+        lastY = parseInt(notes.get(notes.length-1).get 'y') + 50
+      else
+        lastY = 0
       newNote = doc.getModel().createMap
         title: title.val()
         desc: desc.val()
         url: url.val()
+        x: 0
+        y: lastY
+        selected: false
       notes.push newNote
       e.preventDefault()
+      $("#note-creator").hide()
       false
 
+    addContextButton.click (e)->
+      context.set 'background', image_url.val()
+      $("#context-creator").hide()
+
+    backgroundChanged()
     notesChanged()
     collaboratorsChanged()
 
@@ -211,7 +261,7 @@ define ["realtime-client-utils"], (util)->
     ###
     Autocreate files right after auth automatically.
     ###
-    defaultTitle: "New Realtime Quickstart File"
+    defaultTitle: "Because Realtime File"
 
     ###
     Function to be called every time a Realtime file is loaded.

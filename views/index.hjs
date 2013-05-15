@@ -32,24 +32,27 @@
         <h1>{{ title }}</h1>
       </div>
 
-      <div class="span4">
+      <div id="collaborators" class="span4">
         <button id="authorizeButton" class="btn" disabled>You must authorize</button>
       </div>
 
-      <div id="collaborators" class="span4">
+      <div id="add" class="span4">
+        <button id="display-note-creator" class="btn">Add a note</button>
+        <button id="display-context-creator" class="btn">Add a context</button>
       </div>
     </div>
 
     <div class="row">
-      <svg id="notes" class="span8"></svg>
-      <div id="note-creator" class="span4">
-        <form>
-          <label for="title">Title</label><input id="title" name="title">
-          <label for="url">URL</label><input id="url" name="url">
-          <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
-          <button id="add-note" class="btn">Add</button>
-        </form>
-        <ul id="notes-list"></ul>
+      <svg id="notes" class="span12" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
+      <div id="note-creator">
+        <label for="title">Title</label><input id="title" name="title">
+        <label for="url">URL</label><input id="url" name="url">
+        <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
+        <button id="add-note" class="btn">Send</button>
+      </div>
+      <div id="context-creator">
+        <label for="image-url">Image URL</label><input id="image-url" name="url">
+        <button id="add-context" class="btn">Send</button>
       </div>
     </div>
 
