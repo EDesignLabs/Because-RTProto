@@ -17,9 +17,6 @@
   <script type="text/javascript"
           src="https://apis.google.com/js/api.js"></script>
 
-  <!-- Load the graphics libraries. -->
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-
   <script data-main="javascripts/main" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.5/require.min.js"></script>
 
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
@@ -35,22 +32,27 @@
         <h1>{{ title }}</h1>
       </div>
 
-      <div class="span4">
+      <div id="collaborators" class="span4">
         <button id="authorizeButton" class="btn" disabled>You must authorize</button>
       </div>
 
-      <div id="collaborators" class="span4">
+      <div id="add" class="span4">
+        <button id="display-note-creator" class="btn">Add a note</button>
+        <button id="display-context-creator" class="btn">Add a context</button>
       </div>
     </div>
 
     <div class="row">
-      <svg id="notes" class="span8"></svg>
-      <div id="note-creator" class="span4">
+      <svg id="notes" class="span12" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
+      <div id="note-creator">
         <label for="title">Title</label><input id="title" name="title">
         <label for="url">URL</label><input id="url" name="url">
         <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
-        <button id="add-note" class="btn">Add</button>
-        <ul id="notes-list"></ul>
+        <button id="add-note" class="btn">Send</button>
+      </div>
+      <div id="context-creator">
+        <label for="image-url">Image URL</label><input id="image-url" name="url">
+        <button id="add-context" class="btn">Send</button>
       </div>
     </div>
 

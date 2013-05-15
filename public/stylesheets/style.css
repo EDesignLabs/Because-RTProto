@@ -6,7 +6,27 @@ a {
   color: #00b7ff;
 }
 #notes {
-  height: 500px;
+  height: 800px;
+}
+#note-creator {
+  display: none;
+  position: absolute;
+  background: #eee;
+  padding: 1em;
+  right: 0;
+}
+#note-creator.active {
+  display: block;
+}
+#context-creator {
+  display: none;
+  position: absolute;
+  background: #eee;
+  padding: 1em;
+  right: 0;
+}
+#context-creator.active {
+  display: block;
 }
 #notes-list {
   height: 250px;

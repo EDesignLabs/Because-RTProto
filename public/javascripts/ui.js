@@ -12,20 +12,13 @@ define(["realtime-client-utils"], function(util) {
 
   var initializeModel, onFileLoaded, realtimeOptions;
   initializeModel = function(model) {
-    var note, notes;
-    note = model.createMap({
-      title: "The Title 2",
-      desc: "The Description 2",
-      url: "http://google.com",
-      x: 0,
-      y: 0,
-      hx: 0,
-      hy: 0,
-      positioned: true
-    });
+    var context, notes;
     notes = model.createList();
-    model.getRoot().set("notes", notes);
-    return notes.push(note);
+    context = model.createMap({
+      notes: notes,
+      background: "http://developers.mozilla.org/files/2917/fxlogo.png"
+    });
+    return model.getRoot().set("context", context);
   };
   /*
     This function is called when the Realtime file has been loaded. It should
@@ -36,115 +29,172 @@ define(["realtime-client-utils"], function(util) {
   */
 
   onFileLoaded = function(doc) {
-    var addNoteButton, collaboratorsChanged, desc, model, notes, notesChanged, title, url;
+    var activeElement, addContextButton, addNoteButton, backgroundChanged, collaboratorsChanged, context, desc, displayContextCreator, displayNoteCreator, image_url, model, notes, notesChanged, offsetX, offsetY, title, url;
     model = doc.getModel();
-    notes = model.getRoot().get("notes");
+    notes = model.getRoot().get("context").get("notes");
+    context = model.getRoot().get("context");
     title = $("#title");
     desc = $("#desc");
     url = $("#url");
+    image_url = $("#image-url");
     addNoteButton = $("#add-note");
-    notesChanged = function(e) {
-      var notesElement, notesListElement;
+    addContextButton = $("#add-context");
+    displayNoteCreator = $('#display-note-creator');
+    displayContextCreator = $('#display-context-creator');
+    activeElement = null;
+    offsetX = 0;
+    offsetY = 0;
+    backgroundChanged = function(rtEvent) {
+      var contextElement, notesElement;
+      notesElement = d3.select('#notes');
+      contextElement = notesElement.insert("image", ":first-child");
+      contextElement.attr('xlink:href', context.get('background'));
+      contextElement.attr('x', "0");
+      contextElement.attr('y', "0");
+      contextElement.attr('height', "100%");
+      return contextElement.attr('width', "100%");
+    };
+    notesChanged = function(rtEvent) {
+      var notesElement;
       notesElement = d3.select('#notes');
       notesElement.selectAll('*').each(function(d, i) {
         return d3.select(this).remove();
       });
-      notesListElement = $('#notes-list');
-      notesListElement.empty();
+      notesElement.on('mousedown', function() {
+        var grandParentElement, lineElement, matrix, note, parentElement, type, x, y;
+        activeElement = d3.select(d3.event.target);
+        if (activeElement) {
+          type = activeElement.attr('data-type');
+        }
+        if (activeElement && activeElement.attr('data-index')) {
+          note = notes.get(parseInt(activeElement.attr('data-index'), 10));
+        }
+        if (note) {
+          if (type === 'note-rect') {
+            parentElement = d3.select(activeElement.node().parentNode);
+            matrix = parentElement.attr('transform').slice(7, -1).split(' ');
+            x = matrix[4] !== 'NaN' ? parseInt(matrix[4], 10) : 0;
+            y = matrix[5] !== 'NaN' ? parseInt(matrix[5], 10) : 0;
+            offsetX = d3.event.clientX - activeElement.node().offsetLeft - x;
+            offsetY = d3.event.clientY - activeElement.node().offsetTop - y;
+          }
+          if (type === 'handle') {
+            parentElement = d3.select(activeElement.node().parentNode);
+            grandParentElement = d3.select(parentElement.node().parentNode);
+            lineElement = parentElement.select('line');
+            lineElement.attr('opacity', 1.0);
+            offsetX = d3.event.clientX - activeElement.node().offsetLeft - activeElement.attr('cx');
+            return offsetY = d3.event.clientY - activeElement.node().offsetTop - activeElement.attr('cy');
+          }
+        }
+      });
+      notesElement.on('mousemove', function() {
+        var lineElement, note, parentElement, type, x, y;
+        if (activeElement) {
+          type = activeElement.attr('data-type');
+        }
+        if (activeElement && activeElement.attr('data-index')) {
+          note = notes.get(parseInt(activeElement.attr('data-index'), 10));
+        }
+        if (note) {
+          if (type === 'handle') {
+            parentElement = d3.select(activeElement.node().parentNode);
+            lineElement = parentElement.select('line');
+            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX;
+            y = d3.event.clientY - activeElement.node().offsetTop - offsetY;
+            activeElement.attr('cx', x);
+            activeElement.attr('cy', y);
+            lineElement.attr('x2', x);
+            return lineElement.attr('y2', y);
+          }
+        }
+      });
+      notesElement.on('mouseup', function() {
+        var grandParentElement, lineElement, matrix, note, parentElement, type;
+        if (activeElement) {
+          type = activeElement.attr('data-type');
+        }
+        if (activeElement && activeElement.attr('data-index')) {
+          note = notes.get(parseInt(activeElement.attr('data-index'), 10));
+        }
+        if (note) {
+          if (type === 'note-rect') {
+            parentElement = d3.select(activeElement.node().parentNode);
+            matrix = parentElement.attr('transform').slice(7, -1).split(' ');
+            note.set('x', matrix[4]);
+            note.set('y', matrix[5]);
+            lineElement = parentElement.select('line');
+            lineElement.attr('opacity', note.get('selected') ? 0.0 : 1.0);
+            note.set('selected', !note.get('selected'));
+          }
+          if (type === 'handle') {
+            parentElement = d3.select(activeElement.node().parentNode);
+            grandParentElement = d3.select(parentElement.node().parentNode);
+            lineElement = parentElement.select('line');
+            lineElement.attr('opacity', note.get('selected') ? 1.0 : 0.0);
+            note.set('hx', activeElement.attr('cx'));
+            note.set('hy', activeElement.attr('cy'));
+          }
+          offsetX = 0;
+          offsetY = 0;
+        }
+        return activeElement = null;
+      });
       return $.each(notes.asArray(), function(index, note) {
-        var author, authorColor, authorElement, collaborators, handleElement, lineElement, lineGroupElement, noteElement, noteItemElement, noteRectElement, _ref, _ref1;
+        var author, authorColor, authorElement, collaborators, descElement, handleElement, lineElement, lineGroupElement, noteElement, noteItemElement, noteRectElement, titleElement, _ref, _ref1, _ref2;
         noteElement = notesElement.append('g');
-        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 100);
-        noteElement.append('text').attr('style', 'fill:red;stroke:none').text(note.get('title'));
         noteElement.attr('id', note.id);
         noteElement.attr('x', 0);
         noteElement.attr('y', 0);
+        noteElement.attr('data-type', 'note');
+        noteElement.attr('data-index', index);
         noteElement.attr('fill', '#fff');
         noteElement.attr('stroke', 'black');
         noteElement.attr('transform', "matrix(1 0 0 1 " + (note.get('x')) + " " + (note.get('y')) + ")");
+        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50);
+        noteRectElement.attr('data-type', 'note-rect');
+        noteRectElement.attr('data-index', index);
+        titleElement = noteElement.append('text').text(note.get('title'));
+        titleElement.attr('style', 'fill:black;stroke:none');
+        titleElement.attr('x', 5);
+        titleElement.attr('y', 15);
+        titleElement.attr('font-size', 12);
+        descElement = noteElement.append('text').text(note.get('desc'));
+        descElement.attr('style', 'fill:blue;stroke:none');
+        descElement.attr('x', 5);
+        descElement.attr('y', 30);
+        descElement.attr('width', 50);
+        descElement.attr('height', 'auto');
+        descElement.attr('font-size', 8);
         lineGroupElement = noteElement.append('g');
-        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx')).attr('y2', note.get('hy'));
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 50);
         lineElement.attr('stroke', 'black');
-        lineElement.attr('strokeWidth', 3);
-        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx')).attr('cy', note.get('hy'));
+        lineElement.attr('strokeWidth', 2);
+        lineElement.attr('opacity', note.get('selected') ? 0.0 : 1.0);
+        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx') || 200).attr('cy', note.get('hy') || 50);
         handleElement.attr('stroke', 'black');
-        handleElement.attr('strokeWidth', 3);
-        noteRectElement.on('mousedown', function(d, i) {
-          var matrix, offsetX, offsetY;
-          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
-          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - matrix[4];
-          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - matrix[5];
-          return noteRectElement.on('mousemove', function(d, i) {
-            var x, y;
-            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX;
-            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY;
-            return noteElement.attr('transform', "matrix(1 0 0 1 " + x + " " + y + ")");
-          });
-        });
-        noteRectElement.on('mouseup', function(d, i) {
-          var matrix;
-          noteRectElement.on('mousemove', null);
-          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
-          model.beginCompoundOperation();
-          note.set('x', matrix[4]);
-          note.set('y', matrix[5]);
-          return model.endCompoundOperation();
-        });
-        noteRectElement.on('mouseout', function(d, i) {
-          var matrix;
-          noteRectElement.on('mousemove', null);
-          matrix = noteElement.attr('transform').slice(7, -1).split(' ');
-          model.beginCompoundOperation();
-          note.set('x', matrix[4]);
-          note.set('y', matrix[5]);
-          return model.endCompoundOperation();
-        });
-        handleElement.on('mousedown', function(d, i) {
-          var offsetX, offsetY;
-          offsetX = d3.event.clientX - notesElement[0][0].offsetLeft - handleElement.attr('cx');
-          offsetY = d3.event.clientY - notesElement[0][0].offsetTop - handleElement.attr('cy');
-          return handleElement.on('mousemove', function(d, i) {
-            var x, y;
-            x = d3.event.clientX - notesElement[0][0].offsetLeft - offsetX;
-            y = d3.event.clientY - notesElement[0][0].offsetTop - offsetY;
-            handleElement.attr('cx', x);
-            handleElement.attr('cy', y);
-            lineElement.attr('x2', x);
-            return lineElement.attr('y2', y);
-          });
-        });
-        handleElement.on('mouseup', function(d, i) {
-          handleElement.on('mousemove', null);
-          model.beginCompoundOperation();
-          note.set('hx', handleElement.attr('cx'));
-          note.set('hy', handleElement.attr('cy'));
-          return model.endCompoundOperation();
-        });
-        handleElement.on('mouseout', function(d, i) {
-          handleElement.on('mousemove', null);
-          model.beginCompoundOperation();
-          note.set('hx', handleElement.attr('cx'));
-          note.set('hy', handleElement.attr('cy'));
-          return model.endCompoundOperation();
-        });
+        handleElement.attr('strokeWidth', 10);
+        handleElement.attr('data-type', 'handle');
+        handleElement.attr('data-index', index);
         noteItemElement = $("<li id=\"note-item-" + note.id + "\" class=\"note-item\">\n<h2><a href=\"" + (note.get('url')) + "\">" + (note.get('title')) + "</a></h2>\n<p>" + (note.get('desc')) + "</p></li>");
         noteItemElement.click(function(e) {
           noteElement.transition().duration(100).attr('fill', '#ff0');
           return noteElement.transition().delay(500).duration(500).attr('fill', '#fff');
         });
-        notesListElement.append(noteItemElement);
-        if (e && note.id === e.target.id) {
+        if ((rtEvent != null ? (_ref = rtEvent.target) != null ? _ref.id : void 0 : void 0) === note.id) {
           collaborators = _.filter(doc.getCollaborators(), function(item) {
-            return item.userId === e.userId && !item.isMe;
+            return item.userId === rtEvent.userId && !item.isMe;
           });
-          author = (_ref = collaborators[0]) != null ? _ref.displayName : void 0;
-          authorColor = (_ref1 = collaborators[0]) != null ? _ref1.color : void 0;
-          authorElement = $("<span class=\"collaborator\" style=\"display: none; background-color: " + authorColor + "; color: white;\">" + author + "</span>");
-          noteElement.append(authorElement);
-          authorElement.fadeIn();
-          return _.delay((function() {
-            return authorElement.fadeOut();
-          }), 2000);
+          if (collaborators.length > 0) {
+            author = (_ref1 = collaborators[0]) != null ? _ref1.displayName : void 0;
+            authorColor = (_ref2 = collaborators[0]) != null ? _ref2.color : void 0;
+            authorElement = $("<span class=\"collaborator\" style=\"display: none; background-color: " + authorColor + "; color: white;\">" + author + "</span>");
+            noteElement.append(authorElement);
+            authorElement.fadeIn();
+            return _.delay((function() {
+              return authorElement.fadeOut();
+            }), 2000);
+          }
         }
       });
     };
@@ -152,9 +202,7 @@ define(["realtime-client-utils"], function(util) {
       var collaborators, collaboratorsElement;
       collaboratorsElement = $("#collaborators");
       collaboratorsElement.empty();
-      collaborators = _.uniq(doc.getCollaborators(), true, function(item) {
-        return item.id;
-      });
+      collaborators = doc.getCollaborators();
       return $.each(collaborators, function(index, collaborator) {
         var collaboratorElement;
         collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + "\">" + collaborator.displayName + "</span>";
@@ -162,18 +210,40 @@ define(["realtime-client-utils"], function(util) {
       });
     };
     notes.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, notesChanged);
+    context.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, backgroundChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
-    addNoteButton.click(function() {
-      var newNote;
+    displayNoteCreator.click(function(e) {
+      return $("#note-creator").show();
+    });
+    displayContextCreator.click(function(e) {
+      return $("#context-creator").show();
+    });
+    addNoteButton.click(function(e) {
+      var lastY, newNote;
+      if (notes.length > 0) {
+        lastY = parseInt(notes.get(notes.length - 1).get('y')) + 50;
+      } else {
+        lastY = 0;
+      }
       newNote = doc.getModel().createMap({
         title: title.val(),
         desc: desc.val(),
-        url: url.val()
+        url: url.val(),
+        x: 0,
+        y: lastY,
+        selected: false
       });
       notes.push(newNote);
+      e.preventDefault();
+      $("#note-creator").hide();
       return false;
     });
+    addContextButton.click(function(e) {
+      context.set('background', image_url.val());
+      return $("#context-creator").hide();
+    });
+    backgroundChanged();
     notesChanged();
     return collaboratorsChanged();
   };
@@ -206,7 +276,7 @@ define(["realtime-client-utils"], function(util) {
         Autocreate files right after auth automatically.
     */
 
-    defaultTitle: "New Realtime Quickstart File",
+    defaultTitle: "Because Realtime File",
     /*
         Function to be called every time a Realtime file is loaded.
     */
