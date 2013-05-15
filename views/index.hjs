@@ -17,9 +17,6 @@
   <script type="text/javascript"
           src="https://apis.google.com/js/api.js"></script>
 
-  <!-- Load the graphics libraries. -->
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-
   <script data-main="javascripts/main" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.5/require.min.js"></script>
 
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">

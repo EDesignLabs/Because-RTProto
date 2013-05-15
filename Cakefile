@@ -36,8 +36,13 @@ build_stylus = (callback) ->
   stylus.on 'exit', (status) -> callback?() if status is 0
 
 # Compiles app.coffee and src directory to the .app directory
-build_client = (callback) ->
-  options = ['-c','-b', '-o', 'public/javascripts', 'client_src']
+build_client = (callback, watch) ->
+  options = ['-c', '-b', '-o']
+  if watch
+    options.unshift '-w'
+    log "Watching", green
+  files = ['public/javascripts', 'client_src']
+  options = options.concat files
   cmd = which.sync 'coffee'
   coffee = spawn cmd, options
   coffee.stdout.pipe process.stdout
@@ -89,8 +94,16 @@ task 'build', ->
   build_client -> log "client side built :)", green
   build_stylus -> log "styles built :)", green
 
+task 'watch', ->
+  build -> log "server side built :)", green
+  build_client (-> log "8)", green), true
+  build_stylus -> log "styles built :)", green
+
 task 'build_client', ->
   build_client -> log "8)", green
+
+task 'watch_client', ->
+  build_client (-> log "8)", green), true
 
 task 'build_stylus', ->
   build_stylus -> log "8)", green
