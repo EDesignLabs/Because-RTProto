@@ -109,14 +109,10 @@ define ["realtime-client-utils"], (util)->
             note.set 'x', matrix[4]
             note.set 'y', matrix[5]
             #invert selection
-            lineElement = parentElement.select('line')
-            lineElement.attr 'opacity', if note.get 'selected' then 0.0 else 1.0
             note.set 'selected', (not note.get 'selected')
           if type is 'handle'
             parentElement = d3.select activeElement.node().parentNode
             grandParentElement = d3.select parentElement.node().parentNode
-            lineElement = parentElement.select('line')
-            lineElement.attr 'opacity', if note.get 'selected' then 1.0 else 0.0
             note.set 'hx', activeElement.attr 'cx'
             note.set 'hy', activeElement.attr 'cy'
 
@@ -132,13 +128,13 @@ define ["realtime-client-utils"], (util)->
         noteElement.attr 'y', 0
         noteElement.attr 'data-type', 'note'
         noteElement.attr 'data-index', index
-        noteElement.attr 'fill', '#fff'
-        noteElement.attr 'stroke', 'black'
         noteElement.attr 'transform', "matrix(1 0 0 1 #{note.get('x')} #{note.get('y')})"
 
         noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50)
         noteRectElement.attr 'data-type', 'note-rect'
         noteRectElement.attr 'data-index', index
+        noteRectElement.attr 'fill', if note.get 'selected' then 'white' else 'lightsteelblue'
+        noteRectElement.attr 'stroke', if note.get 'selected' then 'black' else 'darkslateblue'
 
         titleElement = noteElement.append('text').text note.get 'title'
         titleElement.attr 'style','fill:black;stroke:none'
@@ -155,13 +151,14 @@ define ["realtime-client-utils"], (util)->
 
         lineGroupElement = noteElement.append 'g'
 
-        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 50)
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 25).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 25)
         lineElement.attr 'stroke', 'black'
         lineElement.attr 'strokeWidth', 2
         lineElement.attr 'opacity', if note.get 'selected' then 0.0 else 1.0
 
         handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx') || 200).attr('cy', note.get('hy') || 50)
-        handleElement.attr 'stroke', 'black'
+        handleElement.attr 'fill', if note.get 'selected' then 'white' else 'lightsteelblue'
+        handleElement.attr 'stroke', if note.get 'selected' then 'black' else 'darkslateblue'
         handleElement.attr 'strokeWidth', 10
         handleElement.attr 'data-type', 'handle'
         handleElement.attr 'data-index', index

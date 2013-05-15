@@ -110,7 +110,7 @@ define(["realtime-client-utils"], function(util) {
         }
       });
       notesElement.on('mouseup', function() {
-        var grandParentElement, lineElement, matrix, note, parentElement, type;
+        var grandParentElement, matrix, note, parentElement, type;
         if (activeElement) {
           type = activeElement.attr('data-type');
         }
@@ -123,15 +123,11 @@ define(["realtime-client-utils"], function(util) {
             matrix = parentElement.attr('transform').slice(7, -1).split(' ');
             note.set('x', matrix[4]);
             note.set('y', matrix[5]);
-            lineElement = parentElement.select('line');
-            lineElement.attr('opacity', note.get('selected') ? 0.0 : 1.0);
             note.set('selected', !note.get('selected'));
           }
           if (type === 'handle') {
             parentElement = d3.select(activeElement.node().parentNode);
             grandParentElement = d3.select(parentElement.node().parentNode);
-            lineElement = parentElement.select('line');
-            lineElement.attr('opacity', note.get('selected') ? 1.0 : 0.0);
             note.set('hx', activeElement.attr('cx'));
             note.set('hy', activeElement.attr('cy'));
           }
@@ -148,12 +144,12 @@ define(["realtime-client-utils"], function(util) {
         noteElement.attr('y', 0);
         noteElement.attr('data-type', 'note');
         noteElement.attr('data-index', index);
-        noteElement.attr('fill', '#fff');
-        noteElement.attr('stroke', 'black');
         noteElement.attr('transform', "matrix(1 0 0 1 " + (note.get('x')) + " " + (note.get('y')) + ")");
         noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50);
         noteRectElement.attr('data-type', 'note-rect');
         noteRectElement.attr('data-index', index);
+        noteRectElement.attr('fill', note.get('selected') ? 'white' : 'lightsteelblue');
+        noteRectElement.attr('stroke', note.get('selected') ? 'black' : 'darkslateblue');
         titleElement = noteElement.append('text').text(note.get('title'));
         titleElement.attr('style', 'fill:black;stroke:none');
         titleElement.attr('x', 5);
@@ -167,12 +163,13 @@ define(["realtime-client-utils"], function(util) {
         descElement.attr('height', 'auto');
         descElement.attr('font-size', 8);
         lineGroupElement = noteElement.append('g');
-        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 50).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 50);
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 25).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 25);
         lineElement.attr('stroke', 'black');
         lineElement.attr('strokeWidth', 2);
         lineElement.attr('opacity', note.get('selected') ? 0.0 : 1.0);
         handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx') || 200).attr('cy', note.get('hy') || 50);
-        handleElement.attr('stroke', 'black');
+        handleElement.attr('fill', note.get('selected') ? 'white' : 'lightsteelblue');
+        handleElement.attr('stroke', note.get('selected') ? 'black' : 'darkslateblue');
         handleElement.attr('strokeWidth', 10);
         handleElement.attr('data-type', 'handle');
         handleElement.attr('data-index', index);
