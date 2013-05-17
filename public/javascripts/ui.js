@@ -12,11 +12,17 @@ define(["realtime-client-utils"], function(util) {
 
   var initializeModel, onFileLoaded, realtimeOptions;
   initializeModel = function(model) {
-    var context, notes;
+    var context, data, notes;
     notes = model.createList();
+    data = model.createMap({
+      image: model.createString("http://developers.mozilla.org/files/2917/fxlogo.png"),
+      spreadsheet: model.createString("")
+    });
     context = model.createMap({
       notes: notes,
-      background: "http://developers.mozilla.org/files/2917/fxlogo.png"
+      data: data,
+      phase: model.createString("1"),
+      owner: model.createMap()
     });
     return model.getRoot().set("context", context);
   };
@@ -29,14 +35,17 @@ define(["realtime-client-utils"], function(util) {
   */
 
   onFileLoaded = function(doc) {
-    var activeElement, addContextButton, addNoteButton, backgroundChanged, collaboratorsChanged, context, desc, displayContextCreator, displayNoteCreator, image_url, model, notes, notesChanged, offsetX, offsetY, title, url;
+    var activeElement, addContextButton, addNoteButton, backgroundImage, backgroundImageChanged, collaboratorsChanged, context, data, desc, displayContextCreator, displayNoteCreator, imageUrl, model, notes, notesAdded, notesChanged, offsetX, offsetY, root, title, url;
     model = doc.getModel();
-    notes = model.getRoot().get("context").get("notes");
-    context = model.getRoot().get("context");
+    root = model.getRoot();
+    context = root.get('context');
+    notes = context.get('notes');
+    data = context.get('data');
+    backgroundImage = data.get('image');
     title = $("#title");
     desc = $("#desc");
     url = $("#url");
-    image_url = $("#image-url");
+    imageUrl = $("#image-url");
     addNoteButton = $("#add-note");
     addContextButton = $("#add-context");
     displayNoteCreator = $('#display-note-creator');
@@ -44,22 +53,82 @@ define(["realtime-client-utils"], function(util) {
     activeElement = null;
     offsetX = 0;
     offsetY = 0;
-    backgroundChanged = function(rtEvent) {
+    backgroundImageChanged = function(rtEvent) {
       var contextElement, notesElement;
       notesElement = d3.select('#notes');
       contextElement = notesElement.insert("image", ":first-child");
-      contextElement.attr('xlink:href', context.get('background'));
+      contextElement.attr('xlink:href', backgroundImage.getText());
       contextElement.attr('x', "0");
       contextElement.attr('y', "0");
       contextElement.attr('height', "100%");
       return contextElement.attr('width', "100%");
     };
+    notesAdded = function(rtEvent) {
+      var notesElement;
+      notesElement = d3.select('#notes');
+      console.log(rtEvent);
+      return $.each(rtEvent.values, function(index, note) {
+        var author, authorColor, authorElement, collaborators, descElement, handleElement, lineElement, lineGroupElement, noteElement, noteItemElement, noteRectElement, titleElement, _ref, _ref1, _ref2;
+        noteElement = notesElement.append('g');
+        noteElement.attr('id', note.id);
+        noteElement.attr('x', 0);
+        noteElement.attr('y', 0);
+        noteElement.attr('data-type', 'note');
+        noteElement.attr('data-index', index);
+        noteElement.attr('transform', "matrix(1 0 0 1 " + (note.get('x').getText()) + " " + (note.get('y').getText()) + ")");
+        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50);
+        noteRectElement.attr('data-type', 'note-rect');
+        noteRectElement.attr('data-index', index);
+        noteRectElement.attr('fill', note.get('selected').getText() === 'true' ? 'white' : 'lightsteelblue');
+        noteRectElement.attr('stroke', note.get('selected').getText() === 'true' ? 'black' : 'darkslateblue');
+        titleElement = noteElement.append('text').text(note.get('title').getText());
+        titleElement.attr('style', 'fill:black;stroke:none');
+        titleElement.attr('x', 5);
+        titleElement.attr('y', 15);
+        titleElement.attr('font-size', 12);
+        descElement = noteElement.append('text').text(note.get('desc').getText());
+        descElement.attr('style', 'fill:blue;stroke:none');
+        descElement.attr('x', 5);
+        descElement.attr('y', 30);
+        descElement.attr('width', 50);
+        descElement.attr('height', 'auto');
+        descElement.attr('font-size', 8);
+        lineGroupElement = noteElement.append('g');
+        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 25).attr('x2', note.get('hx').getText() || 200).attr('y2', note.get('hy').getText() || 25);
+        lineElement.attr('stroke', 'black');
+        lineElement.attr('strokeWidth', 2);
+        lineElement.attr('opacity', note.get('selected').getText() === 'true' ? 0.0 : 1.0);
+        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx').getText() || 200).attr('cy', note.get('hy').getText() || 50);
+        handleElement.attr('fill', note.get('selected').getText() === 'true' ? 'white' : 'lightsteelblue');
+        handleElement.attr('stroke', note.get('selected').getText() === 'true' ? 'black' : 'darkslateblue');
+        handleElement.attr('strokeWidth', 10);
+        handleElement.attr('data-type', 'handle');
+        handleElement.attr('data-index', index);
+        noteItemElement = $("<li id=\"note-item-" + note.id + "\" class=\"note-item\">\n<h2><a href=\"" + (note.get('url').getText()) + "\">" + (note.get('title').getText()) + "</a></h2>\n<p>" + (note.get('desc').getText()) + "</p></li>");
+        noteItemElement.click(function(e) {
+          noteElement.transition().duration(100).attr('fill', '#ff0');
+          return noteElement.transition().delay(500).duration(500).attr('fill', '#fff');
+        });
+        if ((rtEvent != null ? (_ref = rtEvent.target) != null ? _ref.id : void 0 : void 0) === note.id) {
+          collaborators = _.filter(doc.getCollaborators(), function(item) {
+            return item.userId === rtEvent.userId && !item.isMe;
+          });
+          if (collaborators.length > 0) {
+            author = (_ref1 = collaborators[0]) != null ? _ref1.displayName : void 0;
+            authorColor = (_ref2 = collaborators[0]) != null ? _ref2.color : void 0;
+            authorElement = $("<span class=\"collaborator\" style=\"display: none; background-color: " + authorColor + "; color: white;\">" + author + "</span>");
+            noteElement.append(authorElement);
+            authorElement.fadeIn();
+            return _.delay((function() {
+              return authorElement.fadeOut();
+            }), 2000);
+          }
+        }
+      });
+    };
     notesChanged = function(rtEvent) {
       var notesElement;
       notesElement = d3.select('#notes');
-      notesElement.selectAll('*').each(function(d, i) {
-        return d3.select(this).remove();
-      });
       notesElement.on('mousedown', function() {
         var grandParentElement, lineElement, matrix, note, parentElement, type, x, y;
         activeElement = d3.select(d3.event.target);
@@ -109,7 +178,7 @@ define(["realtime-client-utils"], function(util) {
           }
         }
       });
-      notesElement.on('mouseup', function() {
+      return notesElement.on('mouseup', function() {
         var grandParentElement, matrix, note, parentElement, type;
         if (activeElement) {
           type = activeElement.attr('data-type');
@@ -123,7 +192,7 @@ define(["realtime-client-utils"], function(util) {
             matrix = parentElement.attr('transform').slice(7, -1).split(' ');
             note.set('x', matrix[4]);
             note.set('y', matrix[5]);
-            note.set('selected', !note.get('selected'));
+            note.set('selected', !note.get('selected').getText() === 'true');
           }
           if (type === 'handle') {
             parentElement = d3.select(activeElement.node().parentNode);
@@ -135,64 +204,6 @@ define(["realtime-client-utils"], function(util) {
           offsetY = 0;
         }
         return activeElement = null;
-      });
-      return $.each(notes.asArray(), function(index, note) {
-        var author, authorColor, authorElement, collaborators, descElement, handleElement, lineElement, lineGroupElement, noteElement, noteItemElement, noteRectElement, titleElement, _ref, _ref1, _ref2;
-        noteElement = notesElement.append('g');
-        noteElement.attr('id', note.id);
-        noteElement.attr('x', 0);
-        noteElement.attr('y', 0);
-        noteElement.attr('data-type', 'note');
-        noteElement.attr('data-index', index);
-        noteElement.attr('transform', "matrix(1 0 0 1 " + (note.get('x')) + " " + (note.get('y')) + ")");
-        noteRectElement = noteElement.append('rect').attr('width', 100).attr('height', 50);
-        noteRectElement.attr('data-type', 'note-rect');
-        noteRectElement.attr('data-index', index);
-        noteRectElement.attr('fill', note.get('selected') ? 'white' : 'lightsteelblue');
-        noteRectElement.attr('stroke', note.get('selected') ? 'black' : 'darkslateblue');
-        titleElement = noteElement.append('text').text(note.get('title'));
-        titleElement.attr('style', 'fill:black;stroke:none');
-        titleElement.attr('x', 5);
-        titleElement.attr('y', 15);
-        titleElement.attr('font-size', 12);
-        descElement = noteElement.append('text').text(note.get('desc'));
-        descElement.attr('style', 'fill:blue;stroke:none');
-        descElement.attr('x', 5);
-        descElement.attr('y', 30);
-        descElement.attr('width', 50);
-        descElement.attr('height', 'auto');
-        descElement.attr('font-size', 8);
-        lineGroupElement = noteElement.append('g');
-        lineElement = lineGroupElement.append('line').attr('x1', 100).attr('y1', 25).attr('x2', note.get('hx') || 200).attr('y2', note.get('hy') || 25);
-        lineElement.attr('stroke', 'black');
-        lineElement.attr('strokeWidth', 2);
-        lineElement.attr('opacity', note.get('selected') ? 0.0 : 1.0);
-        handleElement = lineGroupElement.append('circle').attr('r', 5).attr('cx', note.get('hx') || 200).attr('cy', note.get('hy') || 50);
-        handleElement.attr('fill', note.get('selected') ? 'white' : 'lightsteelblue');
-        handleElement.attr('stroke', note.get('selected') ? 'black' : 'darkslateblue');
-        handleElement.attr('strokeWidth', 10);
-        handleElement.attr('data-type', 'handle');
-        handleElement.attr('data-index', index);
-        noteItemElement = $("<li id=\"note-item-" + note.id + "\" class=\"note-item\">\n<h2><a href=\"" + (note.get('url')) + "\">" + (note.get('title')) + "</a></h2>\n<p>" + (note.get('desc')) + "</p></li>");
-        noteItemElement.click(function(e) {
-          noteElement.transition().duration(100).attr('fill', '#ff0');
-          return noteElement.transition().delay(500).duration(500).attr('fill', '#fff');
-        });
-        if ((rtEvent != null ? (_ref = rtEvent.target) != null ? _ref.id : void 0 : void 0) === note.id) {
-          collaborators = _.filter(doc.getCollaborators(), function(item) {
-            return item.userId === rtEvent.userId && !item.isMe;
-          });
-          if (collaborators.length > 0) {
-            author = (_ref1 = collaborators[0]) != null ? _ref1.displayName : void 0;
-            authorColor = (_ref2 = collaborators[0]) != null ? _ref2.color : void 0;
-            authorElement = $("<span class=\"collaborator\" style=\"display: none; background-color: " + authorColor + "; color: white;\">" + author + "</span>");
-            noteElement.append(authorElement);
-            authorElement.fadeIn();
-            return _.delay((function() {
-              return authorElement.fadeOut();
-            }), 2000);
-          }
-        }
       });
     };
     collaboratorsChanged = function(e) {
@@ -207,7 +218,8 @@ define(["realtime-client-utils"], function(util) {
       });
     };
     notes.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, notesChanged);
-    context.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, backgroundChanged);
+    notes.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, notesAdded);
+    backgroundImage.addEventListener(gapi.drive.realtime.EventType.VALUE_CHANGED, backgroundImageChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
     displayNoteCreator.click(function(e) {
@@ -219,17 +231,23 @@ define(["realtime-client-utils"], function(util) {
     addNoteButton.click(function(e) {
       var lastY, newNote;
       if (notes.length > 0) {
-        lastY = parseInt(notes.get(notes.length - 1).get('y')) + 50;
+        if (notes.get(notes.length - 1).get('y')) {
+          lastY = parseInt(notes.get(notes.length - 1).get('y').getText()) + 50;
+        } else {
+          lastY = 0;
+        }
       } else {
         lastY = 0;
       }
       newNote = doc.getModel().createMap({
-        title: title.val(),
-        desc: desc.val(),
-        url: url.val(),
-        x: 0,
-        y: lastY,
-        selected: false
+        title: doc.getModel().createString(title.val()),
+        desc: doc.getModel().createString(desc.val()),
+        url: doc.getModel().createString(url.val()),
+        x: doc.getModel().createString('0'),
+        y: doc.getModel().createString(lastY),
+        hx: doc.getModel().createString('0'),
+        hy: doc.getModel().createString('0'),
+        selected: doc.getModel().createString('false')
       });
       notes.push(newNote);
       e.preventDefault();
@@ -237,10 +255,10 @@ define(["realtime-client-utils"], function(util) {
       return false;
     });
     addContextButton.click(function(e) {
-      context.set('background', image_url.val());
+      context.set('background', imageUrl.val());
       return $("#context-creator").hide();
     });
-    backgroundChanged();
+    backgroundImageChanged();
     notesChanged();
     return collaboratorsChanged();
   };
