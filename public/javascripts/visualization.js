@@ -1,4 +1,5 @@
 define('Visualizations', ["rickshaw.min", "underscore", "tabletop"], function(Rickshaw, _, Tabletop) {
+  // TODO: Convert this to a closure and return an initalize method.
   $(document).ready(function () {
 
     var $dataSource = $('#google-spreadsheet'),
