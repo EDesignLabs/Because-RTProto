@@ -11,7 +11,8 @@
     "wrench": ">=1.4.4",
     "which": ">=1.0.5",
     "hjs": "*",
-    "stylus": "*"
+    "stylus": "*",
+    "underscore": "~1.4.4"
   },
   "devDependencies": {
     "nodeunit": ">=0.7.4",
