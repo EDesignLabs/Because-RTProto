@@ -172,6 +172,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
       #   @appendChild node
 
     backgroundImageChanged = (rtEvent) ->
+      notesElement.select('image').remove()
       contextElement = notesElement.insert "image", ":first-child"
       contextElement.attr 'xlink:href', backgroundImage.getText()
       contextElement.attr 'x', "0"
@@ -202,7 +203,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
 
     notes.addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, notesAdded
     markers.addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, markersAdded
-    backgroundImage.addEventListener gapi.drive.realtime.EventType.VALUE_CHANGED, backgroundImageChanged
+    backgroundImage.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, backgroundImageChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
@@ -258,7 +259,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
 
     addContextButton.click (e)->
       $("#note-creator").hide()
-      context.set 'background', imageUrl.val()
+      backgroundImage.setText imageUrl.val()
       $("#context-creator").hide()
 
     backgroundImageChanged()
