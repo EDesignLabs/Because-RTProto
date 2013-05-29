@@ -6,8 +6,8 @@
 
   <!-- Load the basic libraries. -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
 
   <!-- Load the Realtime libraries. -->
@@ -29,7 +29,7 @@
   <div class="container">
     <div class="row">
       <div class="span4">
-        <h1>{{ title }}</h1>
+        <!--h1>{{ title }}</h1-->
       </div>
 
       <div id="collaborators" class="span4">
@@ -37,6 +37,7 @@
       </div>
 
       <div id="add" class="span4">
+        <button id="add-marker" class="btn">Add a marker</button>
         <button id="display-note-creator" class="btn">Add a note</button>
         <button id="display-context-creator" class="btn">Add a context</button>
       </div>
@@ -57,9 +58,6 @@
     </div>
 
   </div>
-  <svg id="notes-svg" class="span8" width="100" height="100">
-    <circle cx="0" cy="0" r="20" fill="red"></circle>
-  </svg>
 
 </body>
 </html>
