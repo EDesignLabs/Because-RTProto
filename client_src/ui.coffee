@@ -65,7 +65,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     addContextButton = $("#add-context")
     displayNoteCreator = $('#display-note-creator')
     displayContextCreator = $('#display-context-creator')
-    closeModelButton = $('.hide-modal')
+    closeModalButton = $('.hide-modal')
     notesElement = d3.select '#notes'
 
     activeElement = null
@@ -214,7 +214,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     displayContextCreator.click (e)->
       $("#context-creator").toggle()
       
-    closeModelButton.click (e) ->
+    closeModalButton.click (e) ->
       $(this).parent().hide()
 
     addNoteButton.click (e)->
