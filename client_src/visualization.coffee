@@ -1,5 +1,5 @@
-define "Visualizations", ["rickshaw.min", "underscore", "tabletop"], (Rickshaw, _, Tabletop) ->
-  
+define "visualization", ["rickshaw.min", "underscore", "tabletop"], (Rickshaw, _, Tabletop) ->
+
   # TODO: Convert this to a closure and return an initalize method.
   $(document).ready ->
     
@@ -61,3 +61,7 @@ define "Visualizations", ["rickshaw.min", "underscore", "tabletop"], (Rickshaw, 
       $yAxis.html ""
       $visualization.html ""
       pullDataFromGoogleSpreadsheet $dataSource.val()
+    
+    return {
+      load: () -> console.log("Hello!")
+    }
