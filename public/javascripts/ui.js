@@ -235,10 +235,10 @@ define(["realtime-client-utils", "marker-view", "note-view"], function(util, Mar
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
     displayNoteCreator.click(function(e) {
-      return $("#note-creator").show();
+      return $("#note-creator").toggle();
     });
     displayContextCreator.click(function(e) {
-      return $("#context-creator").show();
+      return $("#context-creator").toggle();
     });
     addNoteButton.click(function(e) {
       var lastY, newNote, _ref;

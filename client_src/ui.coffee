@@ -208,10 +208,10 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
     displayNoteCreator.click (e)->
-      $("#note-creator").show()
+      $("#note-creator").toggle()
 
     displayContextCreator.click (e)->
-      $("#context-creator").show()
+      $("#context-creator").toggle()
 
     addNoteButton.click (e)->
       $("#context-creator").hide()
