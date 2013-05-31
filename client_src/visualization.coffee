@@ -1,5 +1,7 @@
 define "visualization", ["rickshaw.min", "underscore", "tabletop"], (Rickshaw, _, Tabletop) ->
 
+  console.log Rickshaw, _, Tabletop
+
   # TODO: Convert this to a closure and return an initalize method.
   $(document).ready ->
     
