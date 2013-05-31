@@ -65,6 +65,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     addContextButton = $("#add-context")
     displayNoteCreator = $('#display-note-creator')
     displayContextCreator = $('#display-context-creator')
+    closeModalButton = $('.hide-modal')
     notesElement = d3.select '#notes'
 
     activeElement = null
@@ -208,10 +209,13 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
     displayNoteCreator.click (e)->
-      $("#note-creator").show()
+      $("#note-creator").toggle()
 
     displayContextCreator.click (e)->
-      $("#context-creator").show()
+      $("#context-creator").toggle()
+      
+    closeModalButton.click (e) ->
+      $(this).parent().hide()
 
     addNoteButton.click (e)->
       $("#context-creator").hide()

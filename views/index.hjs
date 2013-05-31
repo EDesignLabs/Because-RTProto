@@ -46,12 +46,14 @@
     <div class="row">
       <svg id="notes" class="span12" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
       <div id="note-creator">
+        <a href="#" class="hide-modal">&times;</a>
         <label for="title">Title</label><input id="title" name="title">
         <label for="url">URL</label><input id="url" name="url">
         <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
         <button id="add-note" class="btn">Send</button>
       </div>
       <div id="context-creator">
+        <a href="#" class="hide-modal">&times;</a>
         <label for="image-url">Image URL</label><input id="image-url" name="url">
         <button id="add-context" class="btn">Send</button>
       </div>
