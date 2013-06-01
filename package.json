@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "cake build; node lib",
-    "compile": "cake watch & node_modules/.bin/nodemon lib"
+    "start": "cake build; node lib"
   },
   "dependencies": {
     "express": "3.1.0",
