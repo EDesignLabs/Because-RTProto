@@ -2,6 +2,7 @@
 
 require(["d3.v3.min", "ui", "visualization"], function(d3, ui, visualization) {
   return $(document).ready(function() {
-    return ui.startRealtime(ui.rtclient);
+    ui.startRealtime(ui.rtclient);
+    return visualization.load();
   });
 });

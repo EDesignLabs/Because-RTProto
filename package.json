@@ -12,7 +12,8 @@
     "which": ">=1.0.5",
     "hjs": "*",
     "stylus": "*",
-    "underscore": "~1.4.4"
+    "underscore": "~1.4.4",
+    "nodemon": "~0.7.8"
   },
   "devDependencies": {
     "nodeunit": ">=0.7.4",

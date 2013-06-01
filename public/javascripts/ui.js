@@ -63,7 +63,7 @@ define(["realtime-client-utils", "marker-view", "note-view"], function(util, Mar
   */
 
   onFileLoaded = function(doc) {
-    var activeElement, addContextButton, addMarker, addMarkerButton, addNote, addNoteButton, backgroundImage, backgroundImageChanged, closeModelButton, collaborators, collaboratorsChanged, context, data, desc, displayContextCreator, displayNoteCreator, getMe, imageUrl, markers, markersAdded, model, notes, notesAdded, notesElement, offsetX, offsetY, root, title, url;
+    var activeElement, addContextButton, addMarker, addMarkerButton, addNote, addNoteButton, backgroundImage, backgroundImageChanged, closeModalButton, collaborators, collaboratorsChanged, context, data, desc, displayContextCreator, displayNoteCreator, getMe, imageUrl, markers, markersAdded, model, notes, notesAdded, notesElement, offsetX, offsetY, root, title, url;
     model = doc.getModel();
     root = model.getRoot();
     context = root.get('context');
@@ -81,7 +81,7 @@ define(["realtime-client-utils", "marker-view", "note-view"], function(util, Mar
     addContextButton = $("#add-context");
     displayNoteCreator = $('#display-note-creator');
     displayContextCreator = $('#display-context-creator');
-    closeModelButton = $('.hide-modal');
+    closeModalButton = $('.hide-modal');
     notesElement = d3.select('#notes');
     activeElement = null;
     offsetX = 0;
@@ -241,7 +241,7 @@ define(["realtime-client-utils", "marker-view", "note-view"], function(util, Mar
     displayContextCreator.click(function(e) {
       return $("#context-creator").toggle();
     });
-    closeModelButton.click(function(e) {
+    closeModalButton.click(function(e) {
       return $(this).parent().hide();
     });
     addNoteButton.click(function(e) {
