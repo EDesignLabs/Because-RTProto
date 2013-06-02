@@ -1,4 +1,4 @@
-define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, NoteView)->
+define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (util, MarkerView, NoteView, WorkspaceView)->
   ###
   This function is called the first time that the Realtime model is created
   for a file. This function should be used to initialize any values of the
@@ -26,13 +26,13 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
 
     if type is 'note-rect' or type is 'marker-circle'
       parentElement = d3.select d3el.node().parentNode
-      id = parentElement.attr 'id' if parentElement
+      id = parentElement.attr 'data-object-id' if parentElement
       obj = _.filter(list.asArray(), (obj)-> obj.id is id)[0]
 
-    if type is 'handle'
+    if type is 'handle-circle'
       parentElement = d3.select d3el.node().parentNode
       grandParentElement = d3.select parentElement.node().parentNode
-      id = grandParentElement.attr 'id' if grandParentElement
+      id = grandParentElement.attr 'data-object-id' if grandParentElement
       obj = _.filter(list.asArray(), (obj)-> obj.id is id)[0]
 
     obj
@@ -67,6 +67,13 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     displayContextCreator = $('#display-context-creator')
     closeModalButton = $('.hide-modal')
     notesElement = d3.select '#notes'
+
+    workspaceView = new WorkspaceView
+      model: context
+
+    workspaceView.render()
+
+    $('.workspace-container').append workspaceView.$el
 
     activeElement = null
     offsetX = 0
@@ -108,7 +115,7 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
             x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
             y = d3.event.clientY - activeElement.node().offsetTop - offsetY
             parentElement.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
-          if type is 'handle'
+          if type is 'handle-circle'
             lineElement = parentElement.select('line')
             x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
             y = d3.event.clientY - activeElement.node().offsetTop - offsetY
@@ -154,23 +161,19 @@ define ["realtime-client-utils","marker-view","note-view"], (util, MarkerView, N
     addNote = (note)->
       noteView = new NoteView
         model: note
-        svg: d3.select '#notes'
+        parent: d3.select '#notes'
 
       noteView.render()
 
     addMarker = (marker)->
       markerView = new MarkerView
         model: marker
-        svg: d3.select '#notes'
+        parent: d3.select '#notes'
 
       markerView.render()
 
     $.each notes.asArray(), (index,note)-> addNote note
     $.each markers.asArray(), (index,marker)-> addMarker marker
-
-      # notesElement.select ->
-      #   node = noteView.d3el.node()
-      #   @appendChild node
 
     backgroundImageChanged = (rtEvent) ->
       notesElement.select('image').remove()
