@@ -7,7 +7,10 @@ define(["d3view"], function(D3View) {
     initialize: function(options) {
       this.constructor.__super__.initialize.call(this, options);
       this.model.get('hx').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onHandleXChanged, this));
-      return this.model.get('hy').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onHandleYChanged, this));
+      this.model.get('hy').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onHandleYChanged, this));
+      this.dispatcher.on('tool:engage', _.bind(this.onToolEngage, this));
+      this.dispatcher.on('tool:move', _.bind(this.onToolMove, this));
+      return this.dispatcher.on('tool:release', _.bind(this.onToolRelease, this));
     },
     onHandleXChanged: function(rtEvent) {
       this.lineElement.attr({
@@ -24,6 +27,45 @@ define(["d3view"], function(D3View) {
       return this.circleElement.attr({
         'cy': this.model.get('hy').getText() || 25
       });
+    },
+    onToolEngage: function(ev, tool) {
+      var target;
+      target = d3.select(ev.target);
+      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'handle-circle') {
+        if (tool === 'move') {
+          this.engaged = true;
+          this.lineElement.attr('opacity', 1.0);
+          this.offsetX = ev.clientX - this.circleElement.node().offsetLeft - this.circleElement.attr('cx');
+          return this.offsetY = ev.clientY - this.circleElement.node().offsetTop - this.circleElement.attr('cy');
+        }
+      }
+    },
+    onToolMove: function(ev, tool) {
+      var target, x, y;
+      target = d3.select(ev.target);
+      if (this.engaged) {
+        if (tool === 'move') {
+          x = ev.clientX - this.circleElement.node().offsetLeft - this.offsetX;
+          y = ev.clientY - this.circleElement.node().offsetTop - this.offsetY;
+          this.circleElement.attr('cx', x);
+          this.circleElement.attr('cy', y);
+          this.lineElement.attr('x2', x);
+          return this.lineElement.attr('y2', y);
+        }
+      }
+    },
+    onToolRelease: function(ev, tool) {
+      var cx, cy, target;
+      target = d3.select(ev.target);
+      if (this.engaged) {
+        if (tool === 'move') {
+          cx = this.circleElement.attr('cx');
+          cy = this.circleElement.attr('cy');
+          this.model.get('hx').setText(cx);
+          this.model.get('hy').setText(cy);
+          return this.engaged = false;
+        }
+      }
     },
     render: function() {
       var _ref;

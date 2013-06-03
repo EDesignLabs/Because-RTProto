@@ -53,7 +53,7 @@ define ["d3view"], (D3View)->
                     @model.get('x').setText matrix[4]
                     @model.get('y').setText matrix[5]
             
-            @engaged = false if tool is 'move'              
+                    @engaged = false              
 
         render: ->
             @d3el.attr

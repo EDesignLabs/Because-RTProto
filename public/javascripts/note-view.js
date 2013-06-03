@@ -28,7 +28,7 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
     onToolEngage: function(ev, tool) {
       var matrix, target, x, y;
       target = d3.select(ev.target);
-      if (target.attr('data-object-id') === this.model.id) {
+      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'note-rect') {
         if (tool === 'delete') {
           this.dispatcher.trigger('note:delete', this.model);
         }
@@ -61,10 +61,8 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
           matrix = this.d3el.attr('transform').slice(7, -1).split(' ');
           this.model.get('x').setText(matrix[4]);
           this.model.get('y').setText(matrix[5]);
+          return this.engaged = false;
         }
-      }
-      if (tool === 'move') {
-        return this.engaged = false;
       }
     },
     render: function() {

@@ -61,10 +61,8 @@ define(["d3view"], function(D3View) {
           matrix = this.d3el.attr('transform').slice(7, -1).split(' ');
           this.model.get('x').setText(matrix[4]);
           this.model.get('y').setText(matrix[5]);
+          return this.engaged = false;
         }
-      }
-      if (tool === 'move') {
-        return this.engaged = false;
       }
     },
     render: function() {
