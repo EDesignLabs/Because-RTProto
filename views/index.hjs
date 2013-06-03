@@ -41,6 +41,8 @@
       </div>
 
       <div id="add" class="span4">
+        <button id="move-tool" class="btn">Move</button>
+        <button id="delete-tool" class="btn">Delete</button>
         <button id="add-marker" class="btn">Add a marker</button>
         <button id="display-note-creator" class="btn">Add a note</button>
         <button id="display-context-creator" class="btn">Add a context</button>
@@ -48,7 +50,6 @@
     </div>
 
     <div class="row">
-      <svg id="notes" class="span12" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
       <div id="note-creator">
         <a href="#" class="hide-modal">&times;</a>
         <label for="title">Title</label><input id="title" name="title">
@@ -62,6 +63,8 @@
         <button id="add-context" class="btn">Send</button>
       </div>
     </div>
+
+    <div class="row workspace-container"></div>
 
   </div>
 
