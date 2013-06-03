@@ -3,7 +3,7 @@ define ["d3view"], (D3View)->
         tagName: 'image'
 
         initialize: (options)->
-            @constructor.__super__.initialize.call @,options
+            D3View::initialize.call @,options
             @model.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTextInserted, this
 
         onTextInserted: ->

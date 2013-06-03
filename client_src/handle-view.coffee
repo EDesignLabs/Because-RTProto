@@ -4,11 +4,22 @@ define ["d3view"], (D3View)->
 
         initialize: (options)->
             @constructor.__super__.initialize.call @,options
-            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onObjectChanged, this
-            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onObjectChanged, this
+            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, this
+            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, this
 
-        onObjectChanged: ->
-            @render()
+        onHandleXChanged: (rtEvent)->
+            @lineElement.attr
+                'x2': @model.get('hx').getText() || 200
+
+            @circleElement.attr
+                'cx': @model.get('hx').getText() || 200
+
+        onHandleYChanged: (rtEvent)->
+            @lineElement.attr
+                'y2': @model.get('hy').getText() || 25
+
+            @circleElement.attr
+                'cy': @model.get('hy').getText() || 25
 
         render: ->
             @d3el.attr

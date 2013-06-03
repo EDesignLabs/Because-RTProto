@@ -5,7 +5,7 @@ define(["d3view"], function(D3View) {
   return ContextView = D3View.extend({
     tagName: 'image',
     initialize: function(options) {
-      this.constructor.__super__.initialize.call(this, options);
+      D3View.prototype.initialize.call(this, options);
       return this.model.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onTextInserted, this));
     },
     onTextInserted: function() {

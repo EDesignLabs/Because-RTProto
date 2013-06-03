@@ -6,11 +6,24 @@ define(["d3view"], function(D3View) {
     tagName: 'g',
     initialize: function(options) {
       this.constructor.__super__.initialize.call(this, options);
-      this.model.get('hx').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onObjectChanged, this));
-      return this.model.get('hy').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onObjectChanged, this));
+      this.model.get('hx').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onHandleXChanged, this));
+      return this.model.get('hy').addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onHandleYChanged, this));
     },
-    onObjectChanged: function() {
-      return this.render();
+    onHandleXChanged: function(rtEvent) {
+      this.lineElement.attr({
+        'x2': this.model.get('hx').getText() || 200
+      });
+      return this.circleElement.attr({
+        'cx': this.model.get('hx').getText() || 200
+      });
+    },
+    onHandleYChanged: function(rtEvent) {
+      this.lineElement.attr({
+        'y2': this.model.get('hy').getText() || 25
+      });
+      return this.circleElement.attr({
+        'cy': this.model.get('hy').getText() || 25
+      });
     },
     render: function() {
       var _ref;

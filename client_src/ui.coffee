@@ -21,23 +21,6 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
       owner: model.createMap()
     model.getRoot().set "context", context
 
-  getObjectFromElement = (d3el, list) ->
-    type = d3el.attr 'data-type' if d3el
-
-    if type is 'note-rect' or type is 'marker-circle'
-      parentElement = d3.select d3el.node().parentNode
-      id = parentElement.attr 'data-object-id' if parentElement
-      obj = _.filter(list.asArray(), (obj)-> obj.id is id)[0]
-
-    if type is 'handle-circle'
-      parentElement = d3.select d3el.node().parentNode
-      grandParentElement = d3.select parentElement.node().parentNode
-      id = grandParentElement.attr 'data-object-id' if grandParentElement
-      obj = _.filter(list.asArray(), (obj)-> obj.id is id)[0]
-
-    obj
-
-
   ###
   This function is called when the Realtime file has been loaded. It should
   be used to initialize any user interface components and event handlers
@@ -60,6 +43,8 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
     desc = $("#desc")
     url = $("#url")
     imageUrl = $("#image-url")
+    moveTool = $("#move-tool")
+    deleteTool = $("#delete-tool")
     addMarkerButton = $("#add-marker")
     addNoteButton = $("#add-note")
     addContextButton = $("#add-context")
@@ -68,129 +53,15 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
     closeModalButton = $('.hide-modal')
     notesElement = d3.select '#notes'
 
+    dispatcher = _.clone Backbone.Events
+
     workspaceView = new WorkspaceView
       model: context
+      dispatcher: dispatcher
 
     workspaceView.render()
 
     $('.workspace-container').append workspaceView.$el
-
-    activeElement = null
-    offsetX = 0
-    offsetY = 0
-
-    notesElement.on 'mousedown', ->
-      activeElement = d3.select d3.event.target
-
-      if activeElement
-        type = activeElement.attr 'data-type'
-        obj = getObjectFromElement(activeElement, if type is 'marker-circle' then markers else notes)
-        parentElement = d3.select activeElement.node().parentNode
-
-        if obj
-          if type is 'note-rect' or type is 'marker-circle'
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ')
-            x = if matrix[4] isnt 'NaN' then parseInt matrix[4],10 else 0
-            y = if matrix[5] isnt 'NaN' then parseInt matrix[5],10 else 0
-            offsetX = d3.event.clientX - activeElement.node().offsetLeft - x
-            offsetY = d3.event.clientY - activeElement.node().offsetTop - y
-
-          if type is 'handle'
-            lineElement = parentElement.select('line')
-            lineElement.attr 'opacity', 1.0
-            offsetX = d3.event.clientX - activeElement.node().offsetLeft - activeElement.attr('cx')
-            offsetY = d3.event.clientY - activeElement.node().offsetTop - activeElement.attr('cy')
-        else
-          activeElement = null
-
-
-    notesElement.on 'mousemove', ->
-      if activeElement
-        type = activeElement.attr 'data-type'
-        obj = getObjectFromElement(activeElement, if type is 'marker-circle' then markers else notes)
-        parentElement = d3.select activeElement.node().parentNode
-
-        if obj and obj.get('userId')?.getText() is getMe().userId
-          if type is 'note-rect' or type is 'marker-circle'
-            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
-            y = d3.event.clientY - activeElement.node().offsetTop - offsetY
-            parentElement.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
-          if type is 'handle-circle'
-            lineElement = parentElement.select('line')
-            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX
-            y = d3.event.clientY - activeElement.node().offsetTop - offsetY
-            activeElement.attr 'cx', x
-            activeElement.attr 'cy', y
-            lineElement.attr 'x2', x
-            lineElement.attr 'y2', y
-
-    notesElement.on 'mouseup', ->
-      if activeElement
-        type = activeElement.attr 'data-type'
-        obj = getObjectFromElement(activeElement, if type is 'marker-circle' then markers else notes)
-        parentElement = d3.select activeElement.node().parentNode
-
-        if obj
-          if type is 'note-rect'
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ')
-            model.beginCompoundOperation()
-            obj.get('x').setText matrix[4]
-            obj.get('y').setText matrix[5]
-            #invert selection
-            obj.get('selected').setText if obj.get('selected')?.getText() is 'true' then 'false' else 'true'
-            model.endCompoundOperation()
-          if type is 'marker-circle'
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ')
-            model.beginCompoundOperation()
-            obj.get('x').setText matrix[4]
-            obj.get('y').setText matrix[5]
-            model.endCompoundOperation()
-          if type is 'handle'
-            cx = activeElement.attr 'cx'
-            cy = activeElement.attr 'cy'
-            model.beginCompoundOperation()
-            obj.get('hx').setText cx
-            obj.get('hy').setText cy
-            model.endCompoundOperation()
-
-          offsetX = 0
-          offsetY = 0
-
-      activeElement = null
-
-    addNote = (note)->
-      noteView = new NoteView
-        model: note
-        parent: d3.select '#notes'
-
-      noteView.render()
-
-    addMarker = (marker)->
-      markerView = new MarkerView
-        model: marker
-        parent: d3.select '#notes'
-
-      markerView.render()
-
-    $.each notes.asArray(), (index,note)-> addNote note
-    $.each markers.asArray(), (index,marker)-> addMarker marker
-
-    backgroundImageChanged = (rtEvent) ->
-      notesElement.select('image').remove()
-      contextElement = notesElement.insert "image", ":first-child"
-      contextElement.attr 'xlink:href', backgroundImage.getText()
-      contextElement.attr 'x', "0"
-      contextElement.attr 'y', "0"
-      contextElement.attr 'height', "100%"
-      contextElement.attr 'width', "100%"
-
-    markersAdded = (rtEvent) ->
-      $.each rtEvent.values, (index, marker)->
-        addMarker marker
-
-    notesAdded = (rtEvent) ->
-      $.each rtEvent.values, (index, note)->
-        addNote note
 
     collaboratorsChanged = (e) ->
       collaboratorsElement = $ "#collaborators"
@@ -205,11 +76,11 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
     getMe = () ->
       _.filter(collaborators, (item)-> item.isMe)[0]
 
-    notes.addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, notesAdded
-    markers.addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, markersAdded
-    backgroundImage.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, backgroundImageChanged
-    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
-    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
+    moveTool.click (e)->
+      workspaceView.dispatcher.trigger 'tool:set', 'move'
+
+    deleteTool.click (e)->
+      workspaceView.dispatcher.trigger 'tool:set', 'delete'
 
     displayNoteCreator.click (e)->
       $("#note-creator").toggle()
@@ -268,9 +139,6 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
       $("#note-creator").hide()
       backgroundImage.setText imageUrl.val()
       $("#context-creator").hide()
-
-    backgroundImageChanged()
-    collaboratorsChanged()
 
   realtimeOptions =
 

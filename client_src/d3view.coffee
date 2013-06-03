@@ -1,5 +1,12 @@
 define ->
     D3View = Backbone.View.extend
+        initialize: (options)->
+            Backbone.View::initialize.call @, options
+            @dispatcher = options.dispatcher
+
+            @dispatcher.on 'workspace:remove-object', (model)=>
+                @remove() if model.id is @model?.id
+
         # cf http://nocircleno.com/blog/svg-with-backbone-js/
         _ensureElement: ->
             attrs = _.extend {}, _.result this, 'attributes'

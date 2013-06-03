@@ -10,7 +10,7 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
     @param model {gapi.drive.realtime.Model} the Realtime root model object.
   */
 
-  var getObjectFromElement, initializeModel, onFileLoaded, realtimeOptions;
+  var initializeModel, onFileLoaded, realtimeOptions;
   initializeModel = function(model) {
     var context, data, markers, notes;
     notes = model.createList();
@@ -28,32 +28,6 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
     });
     return model.getRoot().set("context", context);
   };
-  getObjectFromElement = function(d3el, list) {
-    var grandParentElement, id, obj, parentElement, type;
-    if (d3el) {
-      type = d3el.attr('data-type');
-    }
-    if (type === 'note-rect' || type === 'marker-circle') {
-      parentElement = d3.select(d3el.node().parentNode);
-      if (parentElement) {
-        id = parentElement.attr('data-object-id');
-      }
-      obj = _.filter(list.asArray(), function(obj) {
-        return obj.id === id;
-      })[0];
-    }
-    if (type === 'handle-circle') {
-      parentElement = d3.select(d3el.node().parentNode);
-      grandParentElement = d3.select(parentElement.node().parentNode);
-      if (grandParentElement) {
-        id = grandParentElement.attr('data-object-id');
-      }
-      obj = _.filter(list.asArray(), function(obj) {
-        return obj.id === id;
-      })[0];
-    }
-    return obj;
-  };
   /*
     This function is called when the Realtime file has been loaded. It should
     be used to initialize any user interface components and event handlers
@@ -63,7 +37,7 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
   */
 
   onFileLoaded = function(doc) {
-    var activeElement, addContextButton, addMarker, addMarkerButton, addNote, addNoteButton, backgroundImage, backgroundImageChanged, closeModalButton, collaborators, collaboratorsChanged, context, data, desc, displayContextCreator, displayNoteCreator, getMe, imageUrl, markers, markersAdded, model, notes, notesAdded, notesElement, offsetX, offsetY, root, title, url, workspaceView;
+    var addContextButton, addMarkerButton, addNoteButton, backgroundImage, closeModalButton, collaborators, collaboratorsChanged, context, data, deleteTool, desc, dispatcher, displayContextCreator, displayNoteCreator, getMe, imageUrl, markers, model, moveTool, notes, notesElement, root, title, url, workspaceView;
     model = doc.getModel();
     root = model.getRoot();
     context = root.get('context');
@@ -76,6 +50,8 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
     desc = $("#desc");
     url = $("#url");
     imageUrl = $("#image-url");
+    moveTool = $("#move-tool");
+    deleteTool = $("#delete-tool");
     addMarkerButton = $("#add-marker");
     addNoteButton = $("#add-note");
     addContextButton = $("#add-context");
@@ -83,142 +59,13 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
     displayContextCreator = $('#display-context-creator');
     closeModalButton = $('.hide-modal');
     notesElement = d3.select('#notes');
+    dispatcher = _.clone(Backbone.Events);
     workspaceView = new WorkspaceView({
-      model: context
+      model: context,
+      dispatcher: dispatcher
     });
     workspaceView.render();
     $('.workspace-container').append(workspaceView.$el);
-    activeElement = null;
-    offsetX = 0;
-    offsetY = 0;
-    notesElement.on('mousedown', function() {
-      var lineElement, matrix, obj, parentElement, type, x, y;
-      activeElement = d3.select(d3.event.target);
-      if (activeElement) {
-        type = activeElement.attr('data-type');
-        obj = getObjectFromElement(activeElement, type === 'marker-circle' ? markers : notes);
-        parentElement = d3.select(activeElement.node().parentNode);
-        if (obj) {
-          if (type === 'note-rect' || type === 'marker-circle') {
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ');
-            x = matrix[4] !== 'NaN' ? parseInt(matrix[4], 10) : 0;
-            y = matrix[5] !== 'NaN' ? parseInt(matrix[5], 10) : 0;
-            offsetX = d3.event.clientX - activeElement.node().offsetLeft - x;
-            offsetY = d3.event.clientY - activeElement.node().offsetTop - y;
-          }
-          if (type === 'handle') {
-            lineElement = parentElement.select('line');
-            lineElement.attr('opacity', 1.0);
-            offsetX = d3.event.clientX - activeElement.node().offsetLeft - activeElement.attr('cx');
-            return offsetY = d3.event.clientY - activeElement.node().offsetTop - activeElement.attr('cy');
-          }
-        } else {
-          return activeElement = null;
-        }
-      }
-    });
-    notesElement.on('mousemove', function() {
-      var lineElement, obj, parentElement, type, x, y, _ref;
-      if (activeElement) {
-        type = activeElement.attr('data-type');
-        obj = getObjectFromElement(activeElement, type === 'marker-circle' ? markers : notes);
-        parentElement = d3.select(activeElement.node().parentNode);
-        if (obj && ((_ref = obj.get('userId')) != null ? _ref.getText() : void 0) === getMe().userId) {
-          if (type === 'note-rect' || type === 'marker-circle') {
-            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX;
-            y = d3.event.clientY - activeElement.node().offsetTop - offsetY;
-            parentElement.attr('transform', "matrix(1 0 0 1 " + x + " " + y + ")");
-          }
-          if (type === 'handle-circle') {
-            lineElement = parentElement.select('line');
-            x = d3.event.clientX - activeElement.node().offsetLeft - offsetX;
-            y = d3.event.clientY - activeElement.node().offsetTop - offsetY;
-            activeElement.attr('cx', x);
-            activeElement.attr('cy', y);
-            lineElement.attr('x2', x);
-            return lineElement.attr('y2', y);
-          }
-        }
-      }
-    });
-    notesElement.on('mouseup', function() {
-      var cx, cy, matrix, obj, parentElement, type, _ref;
-      if (activeElement) {
-        type = activeElement.attr('data-type');
-        obj = getObjectFromElement(activeElement, type === 'marker-circle' ? markers : notes);
-        parentElement = d3.select(activeElement.node().parentNode);
-        if (obj) {
-          if (type === 'note-rect') {
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ');
-            model.beginCompoundOperation();
-            obj.get('x').setText(matrix[4]);
-            obj.get('y').setText(matrix[5]);
-            obj.get('selected').setText(((_ref = obj.get('selected')) != null ? _ref.getText() : void 0) === 'true' ? 'false' : 'true');
-            model.endCompoundOperation();
-          }
-          if (type === 'marker-circle') {
-            matrix = parentElement.attr('transform').slice(7, -1).split(' ');
-            model.beginCompoundOperation();
-            obj.get('x').setText(matrix[4]);
-            obj.get('y').setText(matrix[5]);
-            model.endCompoundOperation();
-          }
-          if (type === 'handle') {
-            cx = activeElement.attr('cx');
-            cy = activeElement.attr('cy');
-            model.beginCompoundOperation();
-            obj.get('hx').setText(cx);
-            obj.get('hy').setText(cy);
-            model.endCompoundOperation();
-          }
-          offsetX = 0;
-          offsetY = 0;
-        }
-      }
-      return activeElement = null;
-    });
-    addNote = function(note) {
-      var noteView;
-      noteView = new NoteView({
-        model: note,
-        parent: d3.select('#notes')
-      });
-      return noteView.render();
-    };
-    addMarker = function(marker) {
-      var markerView;
-      markerView = new MarkerView({
-        model: marker,
-        parent: d3.select('#notes')
-      });
-      return markerView.render();
-    };
-    $.each(notes.asArray(), function(index, note) {
-      return addNote(note);
-    });
-    $.each(markers.asArray(), function(index, marker) {
-      return addMarker(marker);
-    });
-    backgroundImageChanged = function(rtEvent) {
-      var contextElement;
-      notesElement.select('image').remove();
-      contextElement = notesElement.insert("image", ":first-child");
-      contextElement.attr('xlink:href', backgroundImage.getText());
-      contextElement.attr('x', "0");
-      contextElement.attr('y', "0");
-      contextElement.attr('height', "100%");
-      return contextElement.attr('width', "100%");
-    };
-    markersAdded = function(rtEvent) {
-      return $.each(rtEvent.values, function(index, marker) {
-        return addMarker(marker);
-      });
-    };
-    notesAdded = function(rtEvent) {
-      return $.each(rtEvent.values, function(index, note) {
-        return addNote(note);
-      });
-    };
     collaboratorsChanged = function(e) {
       var collaboratorsElement;
       collaboratorsElement = $("#collaborators");
@@ -235,11 +82,12 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
         return item.isMe;
       })[0];
     };
-    notes.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, notesAdded);
-    markers.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, markersAdded);
-    backgroundImage.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, backgroundImageChanged);
-    doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
-    doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
+    moveTool.click(function(e) {
+      return workspaceView.dispatcher.trigger('tool:set', 'move');
+    });
+    deleteTool.click(function(e) {
+      return workspaceView.dispatcher.trigger('tool:set', 'delete');
+    });
     displayNoteCreator.click(function(e) {
       return $("#note-creator").toggle();
     });
@@ -301,13 +149,11 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
       e.preventDefault();
       return false;
     });
-    addContextButton.click(function(e) {
+    return addContextButton.click(function(e) {
       $("#note-creator").hide();
       backgroundImage.setText(imageUrl.val());
       return $("#context-creator").hide();
     });
-    backgroundImageChanged();
-    return collaboratorsChanged();
   };
   realtimeOptions = {
     /*

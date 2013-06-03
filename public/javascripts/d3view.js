@@ -3,6 +3,17 @@
 define(function() {
   var D3View;
   return D3View = Backbone.View.extend({
+    initialize: function(options) {
+      var _this = this;
+      Backbone.View.prototype.initialize.call(this, options);
+      this.dispatcher = options.dispatcher;
+      return this.dispatcher.on('workspace:remove-object', function(model) {
+        var _ref;
+        if (model.id === ((_ref = _this.model) != null ? _ref.id : void 0)) {
+          return _this.remove();
+        }
+      });
+    },
     _ensureElement: function() {
       var $el, attrs, _ref;
       attrs = _.extend({}, _.result(this, 'attributes'));
