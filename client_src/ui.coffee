@@ -70,11 +70,14 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
       collaborators = doc.getCollaborators()
 
       $.each collaborators, (index, collaborator)->
-        collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color}; background-image: url('#{collaborator.photoUrl}'); background-size: contain; background-repeat: no-repeat; padding-left: 50px">#{collaborator.displayName}</span>"""
+        collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color}; background-image: url('#{collaborator.photoUrl}');">#{collaborator.displayName}</span>"""
         collaboratorsElement.append collaboratorElement
 
     getMe = () ->
       _.filter(collaborators, (item)-> item.isMe)[0]
+    
+    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
+    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
     moveTool.click (e)->
       workspaceView.dispatcher.trigger 'tool:set', 'move'
@@ -139,6 +142,8 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
       $("#note-creator").hide()
       backgroundImage.setText imageUrl.val()
       $("#context-creator").hide()
+
+    collaboratorsChanged()
 
   realtimeOptions =
 

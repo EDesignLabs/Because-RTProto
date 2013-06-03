@@ -7,6 +7,10 @@ define ["d3view"], (D3View)->
             @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, this
             @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, this
 
+            @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
+            @dispatcher.on 'tool:move', _.bind @onToolMove, @
+            @dispatcher.on 'tool:release', _.bind @onToolRelease, @
+
         onHandleXChanged: (rtEvent)->
             @lineElement.attr
                 'x2': @model.get('hx').getText() || 200
@@ -20,6 +24,41 @@ define ["d3view"], (D3View)->
 
             @circleElement.attr
                 'cy': @model.get('hy').getText() || 25
+
+        onToolEngage: (ev, tool)->
+            target = d3.select ev.target
+            
+            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle'
+                if tool is 'move' 
+                    @engaged = true
+                    @lineElement.attr 'opacity', 1.0
+                    @offsetX = ev.clientX - @circleElement.node().offsetLeft - @circleElement.attr('cx')
+                    @offsetY = ev.clientY - @circleElement.node().offsetTop - @circleElement.attr('cy')
+
+
+        onToolMove: (ev, tool)->
+            target = d3.select ev.target
+            
+            if @engaged
+                if tool is 'move'
+                    x = ev.clientX - @circleElement.node().offsetLeft - @offsetX
+                    y = ev.clientY - @circleElement.node().offsetTop - @offsetY
+                    @circleElement.attr 'cx', x
+                    @circleElement.attr 'cy', y
+                    @lineElement.attr 'x2', x
+                    @lineElement.attr 'y2', y
+
+        onToolRelease: (ev, tool)->
+            target = d3.select ev.target
+
+            if @engaged 
+                if tool is 'move'
+                    cx = @circleElement.attr 'cx'
+                    cy = @circleElement.attr 'cy'
+                    @model.get('hx').setText cx
+                    @model.get('hy').setText cy
+            
+                    @engaged = false              
 
         render: ->
             @d3el.attr

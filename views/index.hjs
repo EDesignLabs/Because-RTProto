@@ -33,7 +33,8 @@
   <div class="container">
     <div class="row">
       <div class="span4">
-        <!--h1>{{ title }}</h1-->
+        <button id="move-tool" class="btn">Move</button>
+        <button id="delete-tool" class="btn">Delete</button>
       </div>
 
       <div id="collaborators" class="span4">
@@ -41,8 +42,6 @@
       </div>
 
       <div id="add" class="span4">
-        <button id="move-tool" class="btn">Move</button>
-        <button id="delete-tool" class="btn">Delete</button>
         <button id="add-marker" class="btn">Add a marker</button>
         <button id="display-note-creator" class="btn">Add a note</button>
         <button id="display-context-creator" class="btn">Add a context</button>

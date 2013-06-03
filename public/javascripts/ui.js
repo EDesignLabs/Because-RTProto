@@ -73,7 +73,7 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
       collaborators = doc.getCollaborators();
       return $.each(collaborators, function(index, collaborator) {
         var collaboratorElement;
-        collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + "; background-image: url('" + collaborator.photoUrl + "'); background-size: contain; background-repeat: no-repeat; padding-left: 50px\">" + collaborator.displayName + "</span>";
+        collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + "; background-image: url('" + collaborator.photoUrl + "');\">" + collaborator.displayName + "</span>";
         return collaboratorsElement.append(collaboratorElement);
       });
     };
@@ -82,6 +82,8 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
         return item.isMe;
       })[0];
     };
+    doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
+    doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
     moveTool.click(function(e) {
       return workspaceView.dispatcher.trigger('tool:set', 'move');
     });
@@ -149,11 +151,12 @@ define(["realtime-client-utils", "marker-view", "note-view", "workspace-view"], 
       e.preventDefault();
       return false;
     });
-    return addContextButton.click(function(e) {
+    addContextButton.click(function(e) {
       $("#note-creator").hide();
       backgroundImage.setText(imageUrl.val());
       return $("#context-creator").hide();
     });
+    return collaboratorsChanged();
   };
   realtimeOptions = {
     /*

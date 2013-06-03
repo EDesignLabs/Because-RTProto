@@ -26,7 +26,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
             
-            if target.attr('data-object-id') is @model.id
+            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'note-rect'
                 @dispatcher.trigger 'note:delete', @model if tool is 'delete'
                 
                 if tool is 'move' 
@@ -55,7 +55,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     @model.get('x').setText matrix[4]
                     @model.get('y').setText matrix[5]
             
-            @engaged = false if tool is 'move'              
+                    @engaged = false             
 
 
         render: ->
