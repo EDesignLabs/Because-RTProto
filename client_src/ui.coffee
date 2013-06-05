@@ -1,4 +1,4 @@
-define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (util, MarkerView, NoteView, WorkspaceView)->
+define ["realtime-client-utils", "workspace-view", "control-view"], (util, WorkspaceView, ControlView)->
   ###
   This function is called the first time that the Realtime model is created
   for a file. This function should be used to initialize any values of the
@@ -57,6 +57,11 @@ define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (u
 
     workspaceView = new WorkspaceView
       model: context
+      dispatcher: dispatcher
+
+    controlView = new ControlView
+      model: context
+      el: $('.control')
       dispatcher: dispatcher
 
     workspaceView.render()

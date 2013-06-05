@@ -49,7 +49,8 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
         if (tool === 'move') {
           x = ev.clientX - this.el.offsetLeft - this.offsetX;
           y = ev.clientY - this.el.offsetTop - this.offsetY;
-          return this.d3el.attr('transform', "matrix(1 0 0 1 " + x + " " + y + ")");
+          this.noteRectElement.attr('x', x);
+          return this.noteRectElement.attr('y', y);
         }
       }
     },

@@ -17,6 +17,7 @@
   <!-- Load the Realtime libraries. -->
   <script>
     window.GOOGLE_API_CLIENT_ID = "{{ clientId }}";
+
   </script>
   <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 
@@ -31,9 +32,9 @@
 <!-- Start Realtime when the body has loaded. -->
 <body>
   <div class="container">
-    <div class="row">
-      <div class="span4">
-        <button id="move-tool" class="btn">Move</button>
+    <div class="row control">
+      <div data-toggle="buttons-radio" class="span4 toolbar btn-group">
+        <button id="move-tool" class="btn active">Move</button>
         <button id="delete-tool" class="btn">Delete</button>
       </div>
 
@@ -41,14 +42,12 @@
         <button id="authorizeButton" class="btn" disabled>You must authorize</button>
       </div>
 
-      <div id="add" class="span4">
+      <div class="span4 add">
         <button id="add-marker" class="btn">Add a marker</button>
         <button id="display-note-creator" class="btn">Add a note</button>
         <button id="display-context-creator" class="btn">Add a context</button>
       </div>
-    </div>
 
-    <div class="row">
       <div id="note-creator">
         <a href="#" class="hide-modal">&times;</a>
         <label for="title">Title</label><input id="title" name="title">
@@ -61,6 +60,10 @@
         <label for="image-url">Image URL</label><input id="image-url" name="url">
         <button id="add-context" class="btn">Send</button>
       </div>
+
+    </div>
+
+    <div class="row">
     </div>
 
     <div class="row workspace-container"></div>

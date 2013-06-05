@@ -44,7 +44,9 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 if tool is 'move'
                     x = ev.clientX - @el.offsetLeft - @offsetX
                     y = ev.clientY - @el.offsetTop - @offsetY
-                    @d3el.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
+                    #@d3el.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
+                    @noteRectElement.attr 'x', x
+                    @noteRectElement.attr 'y', y
 
         onToolRelease: (ev, tool)->
             target = d3.select ev.target
