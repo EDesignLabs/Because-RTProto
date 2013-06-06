@@ -1,4 +1,4 @@
-define ['toolbar-view', 'add-view'], (ToolbarView, AddView)->
+define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, MetadataView)->
     ControlView = Backbone.View.extend
         className: 'span12'
 
@@ -7,12 +7,21 @@ define ['toolbar-view', 'add-view'], (ToolbarView, AddView)->
             @dispatcher = options.dispatcher
 
         render: (options)->
-            @toolbarView = new ToolbarView
-                model: @model
+            @metadataView = new MetadataView
+                model: @model.get 'data'
                 dispatcher: @dispatcher
-                el: $el('.toolbar')
+                el: @$el.find('.metadata')
+
+            @toolbarView = new ToolbarView
+                model: @model.get 'context'
+                dispatcher: @dispatcher
+                el: @$el.find('.toolbar')
 
             @addView = new AddView
-                model: @model
+                model: @model.get 'context'
                 dispatcher: @dispatcher
-                el: $el('.add')
+                el: @$el.find('.add')
+
+            @metadataView.render()
+            @toolbarView.render()
+            @addView.render()

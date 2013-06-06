@@ -11,6 +11,8 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     notes = model.createList()
     markers = model.createList()
     data = model.createMap
+      title: model.createString "Title or question"
+      desc: model.createString "Instuctions or description"
       image: model.createString "http://developers.mozilla.org/files/2917/fxlogo.png"
       spreadsheet: model.createString ""
     context = model.createMap
@@ -18,7 +20,9 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       markers: markers
       data: data
       phase: model.createString "1"
-      owner: model.createMap()
+      owner: model.createMap
+        userId: model.createString()
+        color: model.createString()
     model.getRoot().set "context", context
 
   ###
@@ -42,7 +46,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     title = $("#title")
     desc = $("#desc")
     url = $("#url")
-    imageUrl = $("#image-url")
     moveTool = $("#move-tool")
     deleteTool = $("#delete-tool")
     addMarkerButton = $("#add-marker")
@@ -65,6 +68,7 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       dispatcher: dispatcher
 
     workspaceView.render()
+    controlView.render()
 
     $('.workspace-container').append workspaceView.$el
 
@@ -80,7 +84,7 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     getMe = () ->
       _.filter(collaborators, (item)-> item.isMe)[0]
-    
+
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
@@ -95,7 +99,7 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     displayContextCreator.click (e)->
       $("#context-creator").toggle()
-      
+
     closeModalButton.click (e) ->
       $(this).parent().hide()
 
@@ -122,6 +126,9 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       notes.push newNote
       e.preventDefault()
       $("#note-creator").hide()
+      title.val('')
+      desc.val('')
+      url.val('')
       false
 
     addMarkerButton.click (e)->
@@ -145,7 +152,15 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     addContextButton.click (e)->
       $("#note-creator").hide()
+      imageUrl = $("#image-url")
+      documentTitle = $("#document-title")
+      documentDesc = $("#document-desc")
+
       backgroundImage.setText imageUrl.val()
+      data.get('title').setText documentTitle.val()
+      data.get('desc').setText documentDesc.val()
+      data.get('owner').get('userId').setText getMe().userId
+      data.get('owner').get('color').setText getMe().color
       $("#context-creator").hide()
 
     collaboratorsChanged()

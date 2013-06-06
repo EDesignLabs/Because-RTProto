@@ -33,12 +33,14 @@ a {
   overflow-y: scroll;
 }
 .collaborator {
-  padding: 0 0 0 25px;
+  padding: 0;
   display: inline-block;
   width: auto;
   background-size: contain;
   background-repeat: no-repeat;
   color: #fff;
+  font-size: 10px;
+  text-align: right;
 }
 .note {
   width: 150px;
