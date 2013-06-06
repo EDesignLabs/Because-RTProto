@@ -10,13 +10,14 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.1.0/tabletop.min.js"></script>    
+  <script src="//cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.1.0/tabletop.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/rickshaw/1.2.1/rickshaw.min.js"></script>
-      
+
 
   <!-- Load the Realtime libraries. -->
   <script>
     window.GOOGLE_API_CLIENT_ID = "{{ clientId }}";
+
   </script>
   <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 
@@ -31,24 +32,22 @@
 <!-- Start Realtime when the body has loaded. -->
 <body>
   <div class="container">
-    <div class="row">
-      <div class="span4">
-        <button id="move-tool" class="btn">Move</button>
+    <div class="row control">
+      <div class="span4 metadata">
+        <h1 class="title"></h1>
+        <article class="description"></article>
+      </div>
+
+      <div data-toggle="buttons-radio" class="span4 toolbar btn-group">
+        <button id="move-tool" class="btn active">Move</button>
         <button id="delete-tool" class="btn">Delete</button>
       </div>
 
-      <div id="collaborators" class="span4">
-        <button id="authorizeButton" class="btn" disabled>You must authorize</button>
-      </div>
-
-      <div id="add" class="span4">
-        <button id="add-marker" class="btn">Add a marker</button>
+      <div class="span4 add">
         <button id="display-note-creator" class="btn">Add a note</button>
         <button id="display-context-creator" class="btn">Add a context</button>
       </div>
-    </div>
 
-    <div class="row">
       <div id="note-creator">
         <a href="#" class="hide-modal">&times;</a>
         <label for="title">Title</label><input id="title" name="title">
@@ -59,11 +58,20 @@
       <div id="context-creator">
         <a href="#" class="hide-modal">&times;</a>
         <label for="image-url">Image URL</label><input id="image-url" name="url">
+        <label for="document-title">Title/Question</label><input id="document-title" name="title">
+        <label for="document-desc">Description</label><textarea id="document-desc" name="desc"></textarea>
         <button id="add-context" class="btn">Send</button>
       </div>
+
     </div>
 
-    <div class="row workspace-container"></div>
+    <div class="row">
+      <div class="span11 workspace-container">
+      </div>
+      <div id="collaborators" class="span1">
+        <button id="authorizeButton" class="btn" disabled>You must authorize</button>
+      </div>
+    </div>
 
   </div>
 
