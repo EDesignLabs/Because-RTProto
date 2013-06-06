@@ -7,7 +7,6 @@ define ->
             @model.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, this
 
         render: (options)->
-            debugger
             @$el.text @model.getText()
 
         onTitleChanged: (rtEvent)->

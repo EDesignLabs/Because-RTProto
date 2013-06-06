@@ -5,13 +5,10 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
         initialize: (options)->
             Backbone.View::initialize.call @, options
             @dispatcher = options.dispatcher
-            @tool = 'move'
 
             @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
 
             @d3el = d3.select @el
-
-            @d3el.classed @tool, true
 
             @model.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, _.bind @onObjectChanged, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
@@ -33,8 +30,8 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @dispatcher.on 'tool:set', (tool)=>
                 @tool = tool
-                @d3el.classed('move', @tool is 'move')
-                @d3el.classed('delete', @tool is 'delete')
+                @d3el.classed('move', @tool.type is 'move')
+                @d3el.classed('delete', @tool.type is 'delete')
 
             data = @model.get 'data'
 
@@ -43,11 +40,11 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                 parent: @d3el
                 dispatcher: @dispatcher
 
-            _.each @model.get('markers').asArray(), (marker)-> 
+            _.each @model.get('markers').asArray(), (marker)->
                 @addMarker marker
             , @
 
-            _.each @model.get('notes').asArray(), (note)-> 
+            _.each @model.get('notes').asArray(), (note)->
                 @addNote note
             , @
 

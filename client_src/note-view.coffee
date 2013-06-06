@@ -26,10 +26,10 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'note-rect'
-                @dispatcher.trigger 'note:delete', @model if tool is 'delete'
+            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'note-rect' and @model.get('userId').getText() is tool.user.userId
+                @dispatcher.trigger 'note:delete', @model if tool.type is 'delete'
 
-                if tool is 'move'
+                if tool.type is 'move'
                     @engaged = true
                     matrix = @d3el.attr('transform').slice(7, -1).split(' ')
                     x = if matrix[4] isnt 'NaN' then parseInt matrix[4],10 else 0
@@ -41,7 +41,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             target = d3.select ev.target
 
             if @engaged
-                if tool is 'move'
+                if tool.type is 'move'
                     x = ev.clientX - @el.offsetLeft - @offsetX
                     y = ev.clientY - @el.offsetTop - @offsetY
                     @d3el.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
@@ -50,7 +50,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             target = d3.select ev.target
 
             if @engaged
-                if tool is 'move'
+                if tool.type is 'move'
                     matrix = @d3el.attr('transform').slice(7, -1).split(' ')
                     @model.get('x').setText matrix[4]
                     @model.get('y').setText matrix[5]
@@ -74,15 +74,15 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     'id': 'note-rect-' + @model.id
                     'width': 100
                     'height': 50
-                    'fill': if @model.get('selected').getText() is 'true' then 'white' else 'lightsteelblue'
-                    'stroke': @model.get('color')?.getText() or 'gray'
+                    'fill': @model.get('color')?.getText() or 'gray'
+                    'stroke': 'black'
                     'data-type': 'note-rect'
                     'data-object-id': @model.id
 
                 @titleElement = @d3el.append('text').text @model.get('title').getText() if not @titleElement
                 @titleElement.attr
                     'id': 'note-title-' + @model.id
-                    'style': 'fill:black;stroke:none'
+                    'style': 'fill:white;stroke:none'
                     'x': 5
                     'y': 15
                     'font-size': 12
@@ -92,12 +92,12 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 @descElement = @d3el.append('text').text @model.get('desc').getText() if not @descElement
                 @descElement.attr
                     'id': 'note-desc-' + @model.id
-                    'style': 'fill:blue;stroke:none'
+                    'style': 'fill:white;stroke:none'
                     'x': 5
                     'y': 30
                     'width': 50
                     'height': 'auto'
-                    'font-size': 8
+                    'font-size': 9
                     'data-type': 'note-rect'
                     'data-object-id': @model.id
 
