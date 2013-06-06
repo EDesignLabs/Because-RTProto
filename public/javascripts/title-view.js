@@ -9,7 +9,7 @@ define(function() {
       return this.model.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind(this.onTitleChanged, this));
     },
     render: function(options) {
-      debugger;      return this.$el.text(this.model.getText());
+      return this.$el.text(this.model.getText());
     },
     onTitleChanged: function(rtEvent) {
       return this.$el.text(this.model.getText());

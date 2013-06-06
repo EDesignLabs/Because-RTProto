@@ -35,8 +35,8 @@ define(["d3view"], function(D3View) {
     onToolEngage: function(ev, tool) {
       var target;
       target = d3.select(ev.target);
-      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'handle-circle') {
-        if (tool === 'move') {
+      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'handle-circle' && this.model.get('userId').getText() === tool.user.userId) {
+        if (tool.type === 'move') {
           this.engaged = true;
           if (this.lineElement) {
             this.lineElement.attr('opacity', 1.0);
@@ -50,7 +50,7 @@ define(["d3view"], function(D3View) {
       var target, x, y;
       target = d3.select(ev.target);
       if (this.engaged) {
-        if (tool === 'move') {
+        if (tool.type === 'move') {
           x = ev.clientX - this.circleElement.node().offsetLeft - this.offsetX;
           y = ev.clientY - this.circleElement.node().offsetTop - this.offsetY;
           this.circleElement.attr('cx', x);
@@ -68,7 +68,7 @@ define(["d3view"], function(D3View) {
       var cx, cy, target;
       target = d3.select(ev.target);
       if (this.engaged) {
-        if (tool === 'move') {
+        if (tool.type === 'move') {
           cx = this.circleElement.attr('cx');
           cy = this.circleElement.attr('cy');
           this.model.get('hx').setText(cx);

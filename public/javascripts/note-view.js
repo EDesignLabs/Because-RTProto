@@ -28,11 +28,11 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
     onToolEngage: function(ev, tool) {
       var matrix, target, x, y;
       target = d3.select(ev.target);
-      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'note-rect') {
-        if (tool === 'delete') {
+      if (target.attr('data-object-id') === this.model.id && target.attr('data-type') === 'note-rect' && this.model.get('userId').getText() === tool.user.userId) {
+        if (tool.type === 'delete') {
           this.dispatcher.trigger('note:delete', this.model);
         }
-        if (tool === 'move') {
+        if (tool.type === 'move') {
           this.engaged = true;
           matrix = this.d3el.attr('transform').slice(7, -1).split(' ');
           x = matrix[4] !== 'NaN' ? parseInt(matrix[4], 10) : 0;
@@ -46,7 +46,7 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
       var target, x, y;
       target = d3.select(ev.target);
       if (this.engaged) {
-        if (tool === 'move') {
+        if (tool.type === 'move') {
           x = ev.clientX - this.el.offsetLeft - this.offsetX;
           y = ev.clientY - this.el.offsetTop - this.offsetY;
           return this.d3el.attr('transform', "matrix(1 0 0 1 " + x + " " + y + ")");
@@ -57,7 +57,7 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
       var matrix, target;
       target = d3.select(ev.target);
       if (this.engaged) {
-        if (tool === 'move') {
+        if (tool.type === 'move') {
           matrix = this.d3el.attr('transform').slice(7, -1).split(' ');
           this.model.get('x').setText(matrix[4]);
           this.model.get('y').setText(matrix[5]);
@@ -83,8 +83,8 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
           'id': 'note-rect-' + this.model.id,
           'width': 100,
           'height': 50,
-          'fill': this.model.get('selected').getText() === 'true' ? 'white' : 'lightsteelblue',
-          'stroke': ((_ref = this.model.get('color')) != null ? _ref.getText() : void 0) || 'gray',
+          'fill': ((_ref = this.model.get('color')) != null ? _ref.getText() : void 0) || 'gray',
+          'stroke': 'black',
           'data-type': 'note-rect',
           'data-object-id': this.model.id
         });
@@ -93,7 +93,7 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
         }
         this.titleElement.attr({
           'id': 'note-title-' + this.model.id,
-          'style': 'fill:black;stroke:none',
+          'style': 'fill:white;stroke:none',
           'x': 5,
           'y': 15,
           'font-size': 12,
@@ -105,12 +105,12 @@ define(['d3view', 'handle-view'], function(D3View, HandleView) {
         }
         this.descElement.attr({
           'id': 'note-desc-' + this.model.id,
-          'style': 'fill:blue;stroke:none',
+          'style': 'fill:white;stroke:none',
           'x': 5,
           'y': 30,
           'width': 50,
           'height': 'auto',
-          'font-size': 8,
+          'font-size': 9,
           'data-type': 'note-rect',
           'data-object-id': this.model.id
         });

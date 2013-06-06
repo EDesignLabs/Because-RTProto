@@ -9,10 +9,8 @@ define(['context-view', 'note-view', 'marker-view'], function(ContextView, NoteV
         _this = this;
       Backbone.View.prototype.initialize.call(this, options);
       this.dispatcher = options.dispatcher;
-      this.tool = 'move';
       this.setElement(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
       this.d3el = d3.select(this.el);
-      this.d3el.classed(this.tool, true);
       this.model.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, _.bind(this.onObjectChanged, this));
       this.model.get('notes').addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, _.bind(this.onNotesAdded, this));
       this.model.get('notes').addEventListener(gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind(this.onNotesRemoved, this));
@@ -37,8 +35,8 @@ define(['context-view', 'note-view', 'marker-view'], function(ContextView, NoteV
       });
       this.dispatcher.on('tool:set', function(tool) {
         _this.tool = tool;
-        _this.d3el.classed('move', _this.tool === 'move');
-        return _this.d3el.classed('delete', _this.tool === 'delete');
+        _this.d3el.classed('move', _this.tool.type === 'move');
+        return _this.d3el.classed('delete', _this.tool.type === 'delete');
       });
       data = this.model.get('data');
       this.contextView = new ContextView({

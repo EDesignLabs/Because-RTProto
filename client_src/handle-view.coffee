@@ -30,8 +30,8 @@ define ["d3view"], (D3View)->
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle'
-                if tool is 'move'
+            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle' and @model.get('userId').getText() is tool.user.userId
+                if tool.type is 'move'
                     @engaged = true
                     if @lineElement
                         @lineElement.attr 'opacity', 1.0
@@ -43,7 +43,7 @@ define ["d3view"], (D3View)->
             target = d3.select ev.target
 
             if @engaged
-                if tool is 'move'
+                if tool.type is 'move'
                     x = ev.clientX - @circleElement.node().offsetLeft - @offsetX
                     y = ev.clientY - @circleElement.node().offsetTop - @offsetY
                     @circleElement.attr 'cx', x
@@ -55,7 +55,7 @@ define ["d3view"], (D3View)->
             target = d3.select ev.target
 
             if @engaged
-                if tool is 'move'
+                if tool.type is 'move'
                     cx = @circleElement.attr 'cx'
                     cy = @circleElement.attr 'cy'
                     @model.get('hx').setText cx

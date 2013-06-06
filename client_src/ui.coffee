@@ -58,6 +58,19 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     dispatcher = _.clone Backbone.Events
 
+    collaboratorsChanged = (e) ->
+      collaboratorsElement = $ "#collaborators"
+      collaboratorsElement.empty()
+
+      collaborators = doc.getCollaborators()
+
+      $.each collaborators, (index, collaborator)->
+        collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color};">#{collaborator.displayName}</span>"""
+        collaboratorsElement.append collaboratorElement
+
+    getMe = () ->
+      _.filter(collaborators, (item)-> item.isMe)[0]
+
     workspaceView = new WorkspaceView
       model: context
       dispatcher: dispatcher
@@ -70,29 +83,24 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     workspaceView.render()
     controlView.render()
 
+    dispatcher.trigger 'tool:set',
+        type: 'move'
+        user: getMe()
+
     $('.workspace-container').append workspaceView.$el
-
-    collaboratorsChanged = (e) ->
-      collaboratorsElement = $ "#collaborators"
-      collaboratorsElement.empty()
-
-      collaborators = doc.getCollaborators()
-
-      $.each collaborators, (index, collaborator)->
-        collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color}; background-image: url('#{collaborator.photoUrl}');">#{collaborator.displayName}</span>"""
-        collaboratorsElement.append collaboratorElement
-
-    getMe = () ->
-      _.filter(collaborators, (item)-> item.isMe)[0]
 
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
 
     moveTool.click (e)->
-      workspaceView.dispatcher.trigger 'tool:set', 'move'
+      workspaceView.dispatcher.trigger 'tool:set',
+        type: 'move'
+        user: getMe()
 
     deleteTool.click (e)->
-      workspaceView.dispatcher.trigger 'tool:set', 'delete'
+      workspaceView.dispatcher.trigger 'tool:set',
+        type: 'delete'
+        user: getMe()
 
     displayNoteCreator.click (e)->
       $("#note-creator").toggle()

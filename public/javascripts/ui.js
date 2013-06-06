@@ -64,6 +64,22 @@ define(["realtime-client-utils", "workspace-view", "control-view"], function(uti
     closeModalButton = $('.hide-modal');
     notesElement = d3.select('#notes');
     dispatcher = _.clone(Backbone.Events);
+    collaboratorsChanged = function(e) {
+      var collaboratorsElement;
+      collaboratorsElement = $("#collaborators");
+      collaboratorsElement.empty();
+      collaborators = doc.getCollaborators();
+      return $.each(collaborators, function(index, collaborator) {
+        var collaboratorElement;
+        collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + ";\">" + collaborator.displayName + "</span>";
+        return collaboratorsElement.append(collaboratorElement);
+      });
+    };
+    getMe = function() {
+      return _.filter(collaborators, function(item) {
+        return item.isMe;
+      })[0];
+    };
     workspaceView = new WorkspaceView({
       model: context,
       dispatcher: dispatcher
@@ -75,30 +91,24 @@ define(["realtime-client-utils", "workspace-view", "control-view"], function(uti
     });
     workspaceView.render();
     controlView.render();
+    dispatcher.trigger('tool:set', {
+      type: 'move',
+      user: getMe()
+    });
     $('.workspace-container').append(workspaceView.$el);
-    collaboratorsChanged = function(e) {
-      var collaboratorsElement;
-      collaboratorsElement = $("#collaborators");
-      collaboratorsElement.empty();
-      collaborators = doc.getCollaborators();
-      return $.each(collaborators, function(index, collaborator) {
-        var collaboratorElement;
-        collaboratorElement = "<span class=\"collaborator\" style=\"background-color: " + collaborator.color + "; background-image: url('" + collaborator.photoUrl + "');\">" + collaborator.displayName + "</span>";
-        return collaboratorsElement.append(collaboratorElement);
-      });
-    };
-    getMe = function() {
-      return _.filter(collaborators, function(item) {
-        return item.isMe;
-      })[0];
-    };
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged);
     doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged);
     moveTool.click(function(e) {
-      return workspaceView.dispatcher.trigger('tool:set', 'move');
+      return workspaceView.dispatcher.trigger('tool:set', {
+        type: 'move',
+        user: getMe()
+      });
     });
     deleteTool.click(function(e) {
-      return workspaceView.dispatcher.trigger('tool:set', 'delete');
+      return workspaceView.dispatcher.trigger('tool:set', {
+        type: 'delete',
+        user: getMe()
+      });
     });
     displayNoteCreator.click(function(e) {
       return $("#note-creator").toggle();
