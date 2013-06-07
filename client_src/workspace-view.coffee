@@ -7,13 +7,11 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             @dispatcher = options.dispatcher
             @tool = 'move'
 
-<<<<<<< HEAD
             #d3 select 'svg'
-
-            @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
-=======
-            @setElement Visualization.initialize()
->>>>>>> 7af72de147fdedffe3414433adab84e586802055
+            # @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
+            
+            Visualization.initialize()
+            @setElement d3 select 'svg'
 
             @d3el = d3.select @el
 

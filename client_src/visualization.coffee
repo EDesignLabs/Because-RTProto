@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-define ->
-  
-=======
 define "visualization", () ->
     
   # The Y-Axis will be lazily instantiated if needed.
@@ -60,4 +56,3 @@ define "visualization", () ->
   return {
       initialize: pullDataFromGoogleSpreadsheet "https://docs.google.com/spreadsheet/pub?key=0Ar2Io2uAtw9TdEFvb2t5U3BiZDhQRlNSRjRTY3Q2Rmc&output=html"
   }
->>>>>>> 7af72de147fdedffe3414433adab84e586802055
