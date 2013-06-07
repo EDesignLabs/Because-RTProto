@@ -1,6 +1,5 @@
-define "visualization", () ->
+define "visualization", ->
     
-  # The Y-Axis will be lazily instantiated if needed.
   pullDataFromGoogleSpreadsheet = (url) ->
     Tabletop.init
       key: url
