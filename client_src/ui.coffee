@@ -1,4 +1,4 @@
-define ["realtime-client-utils","marker-view","note-view", "workspace-view"], (util, MarkerView, NoteView, WorkspaceView)->
+define ["realtime-client-utils","marker-view","note-view", "workspace-view", "visualization"], (util, MarkerView, NoteView, WorkspaceView, Visualization)->
   ###
   This function is called the first time that the Realtime model is created
   for a file. This function should be used to initialize any values of the
