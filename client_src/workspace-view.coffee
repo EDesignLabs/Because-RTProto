@@ -10,8 +10,8 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             #d3 select 'svg'
             # @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
             
-            Visualization.initialize()
-            @setElement d3 select 'svg'
+            console.log($('.workspace-container svg').get(0))
+            @setElement( $('.workspace-container svg').get(0) )
 
             @d3el = d3.select @el
 

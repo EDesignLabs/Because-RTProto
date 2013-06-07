@@ -1,3 +1,3 @@
-require ["d3.v3.min","ui"], (d3, ui) ->
+require ["ui", "visualization"], (ui, Visualization) ->
     $(document).ready ->
-        ui.startRealtime ui.rtclient
+        Visualization.initialize -> ui.startRealtime ui.rtclient

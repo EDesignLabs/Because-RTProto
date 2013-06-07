@@ -8,7 +8,9 @@ define "visualization", () ->
       simpleSheet: true
 
   generateGraph = (dataset, tabletop) ->
-    keys = _.keys(dataset[0])
+    workspace = document.querySelector ".workspace-container"
+    
+    keys = _.keys dataset[0]
     labels =
       x: keys[0].charAt(0).toUpperCase() + keys[0].slice(1)
       y: keys[1].charAt(0).toUpperCase() + keys[1].slice(1)
@@ -18,9 +20,9 @@ define "visualization", () ->
       y: parseFloat(data[keys[1]], 10)
       
     graph = new Rickshaw.Graph
-      element: document.querySelector "#visualization"
-      width: 940
-      height: 250
+      element: workspace
+      width: 960
+      height: 600
       series: [
         color: "#00ADEF"
         stroke: "rgba(0,0,0,0.15)"
@@ -45,14 +47,9 @@ define "visualization", () ->
     xAxis = new Rickshaw.Graph.Axis.X(graph: graph)
     yAxis.render()
     xAxis.render()
-    slider = new Rickshaw.Graph.RangeSlider
-      graph: graph
-      element: document.querySelector("#slider")
-      
-    return graph
-  
-  $dataSource = $("#google-spreadsheet")
   
   return {
-      initialize: pullDataFromGoogleSpreadsheet "https://docs.google.com/spreadsheet/pub?key=0Ar2Io2uAtw9TdEFvb2t5U3BiZDhQRlNSRjRTY3Q2Rmc&output=html"
+      initialize: (callback) -> 
+        pullDataFromGoogleSpreadsheet "https://docs.google.com/spreadsheet/pub?key=0Ar2Io2uAtw9TdEFvb2t5U3BiZDhQRlNSRjRTY3Q2Rmc&output=html"
+        callback() if callback?
   }
