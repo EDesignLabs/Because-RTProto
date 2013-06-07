@@ -48,7 +48,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'note-rect'
+            if target.attr('data-object-id') is @model.id and (target.attr('data-type') is 'note-rect' or target.attr('data-type') is 'title')
 
                 @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
 
