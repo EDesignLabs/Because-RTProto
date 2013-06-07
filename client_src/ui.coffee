@@ -46,10 +46,10 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     title = $("#title")
     desc = $("#desc")
     url = $("#url")
+    viewTool = $("#view-tool")
     moveTool = $("#move-tool")
+    editTool = $("#edit-tool")
     deleteTool = $("#delete-tool")
-    addMarkerButton = $("#add-marker")
-    addNoteButton = $("#add-note")
     addContextButton = $("#add-context")
     displayNoteCreator = $('#display-note-creator')
     displayContextCreator = $('#display-context-creator')
@@ -76,31 +76,17 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       dispatcher: dispatcher
 
     controlView = new ControlView
-      model: context
+      model: doc
       el: $('.control')
       dispatcher: dispatcher
 
     workspaceView.render()
     controlView.render()
 
-    dispatcher.trigger 'tool:set',
-        type: 'move'
-        user: getMe()
-
     $('.workspace-container').append workspaceView.$el
 
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
-
-    moveTool.click (e)->
-      workspaceView.dispatcher.trigger 'tool:set',
-        type: 'move'
-        user: getMe()
-
-    deleteTool.click (e)->
-      workspaceView.dispatcher.trigger 'tool:set',
-        type: 'delete'
-        user: getMe()
 
     displayNoteCreator.click (e)->
       $("#note-creator").toggle()
@@ -110,53 +96,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     closeModalButton.click (e) ->
       $(this).parent().hide()
-
-    addNoteButton.click (e)->
-      $("#context-creator").hide()
-      if notes.length > 0
-        if notes.get(notes.length-1).get('y') and notes.get(notes.length-1).get('x') is '0'
-          lastY = parseInt(notes.get(notes.length-1).get('y')?.getText() or '0') + 50
-        else
-          lastY = 0
-      else
-        lastY = 0
-      newNote = doc.getModel().createMap
-        title: doc.getModel().createString title.val()
-        desc: doc.getModel().createString desc.val()
-        url: doc.getModel().createString url.val()
-        x: doc.getModel().createString '0'
-        y: doc.getModel().createString if lastY isnt NaN and lastY isnt 'NaN' then lastY+'' else 0
-        hx: doc.getModel().createString '200'
-        hy: doc.getModel().createString '25'
-        selected: doc.getModel().createString 'false'
-        userId: doc.getModel().createString getMe().userId
-        color: doc.getModel().createString getMe().color
-      notes.push newNote
-      e.preventDefault()
-      $("#note-creator").hide()
-      title.val('')
-      desc.val('')
-      url.val('')
-      false
-
-    addMarkerButton.click (e)->
-      $("#note-creator").hide()
-      $("#context-creator").hide()
-      if markers.length > 0
-        if markers.get(markers.length-1).get('y')? and markers.get(markers.length-1).get('x')?.getText() is '400'
-          lastY = parseInt(markers.get(markers.length-1).get('y').getText() or '0') + 10
-        else
-          lastY = 0
-      else
-        lastY = 0
-      newMarker = doc.getModel().createMap
-        x: doc.getModel().createString '400'
-        y: doc.getModel().createString lastY+''
-        userId: doc.getModel().createString getMe().userId
-        color: doc.getModel().createString getMe().color
-      markers.push newMarker
-      e.preventDefault()
-      false
 
     addContextButton.click (e)->
       $("#note-creator").hide()

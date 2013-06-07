@@ -6,6 +6,7 @@ define ["d3view"], (D3View)->
             @constructor.__super__.initialize.call @,options
             @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, this
             @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, this
+            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, this
 
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
@@ -27,16 +28,46 @@ define ["d3view"], (D3View)->
             @circleElement.attr
                 'cy': @model.get('hy').getText() || 25
 
+        onTitleChanged: (rtEvent)->
+            unless @lineElement
+                @lineElement = @d3el.insert 'line', ':first-child' if not @lineElement
+                @lineElement.attr
+                    'id': 'handle-line-' + @model.id
+                    'x1': 75
+                    'y1': 0
+                    'x2': @model.get('hx').getText() || 200
+                    'y2': @model.get('hy').getText() || 25
+                    'stroke': 'black'
+                    'strokeWidth': 2
+                    'opacity': if @model.get('selected').getText() is 'true' then 0.0 else 1.0
+                    'data-type': 'handle-line'
+                    'data-object-id': @model.id
+
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle' and @model.get('userId').getText() is tool.user.userId
-                if tool.type is 'move'
-                    @engaged = true
-                    if @lineElement
-                        @lineElement.attr 'opacity', 1.0
-                    @offsetX = ev.clientX - @circleElement.node().offsetLeft - @circleElement.attr('cx')
-                    @offsetY = ev.clientY - @circleElement.node().offsetTop - @circleElement.attr('cy')
+            target = d3.select ev.target
+
+            if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle'
+
+                @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
+
+                if @model.get('userId').getText() isnt tool.user.userId
+                    @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'note'
+
+                else
+                    #user-restricted actions are below here
+
+                    @dispatcher.trigger 'note:delete', @model if tool.type is 'delete'
+
+                    @dispatcher.trigger 'note:edit', d3.event, @model if tool.type is 'note'
+
+                    if tool.type is 'move'
+                        @engaged = true
+                        if @lineElement
+                            @lineElement.attr 'opacity', 1.0
+                        @offsetX = ev.clientX - @circleElement.node().offsetLeft - @circleElement.attr('cx')
+                        @offsetY = ev.clientY - @circleElement.node().offsetTop - @circleElement.attr('cy')
 
 
         onToolMove: (ev, tool)->
@@ -74,8 +105,8 @@ define ["d3view"], (D3View)->
                 @lineElement = @d3el.append 'line' if not @lineElement
                 @lineElement.attr
                     'id': 'handle-line-' + @model.id
-                    'x1': 100
-                    'y1': 25
+                    'x1': 75
+                    'y1': 0
                     'x2': @model.get('hx').getText() || 200
                     'y2': @model.get('hy').getText() || 25
                     'stroke': 'black'
