@@ -18,6 +18,42 @@ a {
 #note-creator.active {
   display: block;
 }
+#note-creator.add .edit {
+  display: block;
+}
+#note-creator.add .view {
+  display: none;
+}
+#note-creator.add #add-note {
+  display: block;
+}
+#note-creator.add #edit-note {
+  display: none;
+}
+#note-creator.edit .edit {
+  display: block;
+}
+#note-creator.edit .view {
+  display: none;
+}
+#note-creator.edit #add-note {
+  display: none;
+}
+#note-creator.edit #edit-note {
+  display: block;
+}
+#note-creator.view .edit {
+  display: none;
+}
+#note-creator.view .view {
+  display: block;
+}
+#note-creator.view #add-note {
+  display: none;
+}
+#note-creator.view #edit-note {
+  display: none;
+}
 #context-creator {
   display: none;
   position: absolute;
@@ -33,26 +69,23 @@ a {
   overflow-y: scroll;
 }
 .collaborator {
-  padding: 0 0 0 25px;
-  display: inline-block;
-  width: auto;
+  display: block;
+  padding: 2px;
+  margin: 0 0 2px 0;
+  border: 1px solid #000;
+  width: 100%;
   background-size: contain;
   background-repeat: no-repeat;
   color: #fff;
-}
-.note {
-  width: 150px;
-  height: 30px;
-  border: 1px solid #eee;
-  padding: 5px;
-}
-.note h2 {
-  font-size: 1em;
+  font-size: 9px;
   line-height: 1em;
+  text-align: right;
 }
-.note-item h2 {
-  font-size: 1.5em;
-  line-height: 1.5em;
+svg.view {
+  cursor: pointer;
+}
+svg.note {
+  cursor: crosshair;
 }
 svg.move {
   cursor: move;
