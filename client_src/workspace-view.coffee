@@ -10,6 +10,13 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @d3el = d3.select @el
 
+            @data = @model.get 'data'
+
+            @contextView = new ContextView
+                model: @data.get 'image'
+                parent: @d3el
+                dispatcher: @dispatcher
+
             @model.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, _.bind @onObjectChanged, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind @onNotesRemoved, @
@@ -30,15 +37,17 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @dispatcher.on 'tool:set', (tool)=>
                 @tool = tool
+                @d3el.classed('view', @tool.type is 'view')
+                @d3el.classed('marker', @tool.type is 'marker')
+                @d3el.classed('note', @tool.type is 'note')
                 @d3el.classed('move', @tool.type is 'move')
                 @d3el.classed('delete', @tool.type is 'delete')
 
-            data = @model.get 'data'
-
-            @contextView = new ContextView
-                model: data.get 'image'
-                parent: @d3el
-                dispatcher: @dispatcher
+            @dispatcher.on 'tool:engage', (ev, tool)=>
+                if @tool.type is 'note' and ev.target is @contextView.el
+                    @dispatcher.trigger 'note:add', d3.event, @model
+                if @tool.type is 'marker' and ev.target is @contextView.el
+                    @dispatcher.trigger 'marker:add', d3.event, @model
 
             _.each @model.get('markers').asArray(), (marker)->
                 @addMarker marker

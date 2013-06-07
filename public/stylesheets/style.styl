@@ -17,6 +17,36 @@ a
   &.active
     display block
 
+  &.add
+    .edit
+      display block
+    .view
+      display none
+    #add-note
+      display block
+    #edit-note
+      display none
+
+  &.edit
+    .edit
+      display block
+    .view
+      display none
+    #add-note
+      display none
+    #edit-note
+      display block
+
+  &.view
+    .edit
+      display none
+    .view
+      display block
+    #add-note
+      display none
+    #edit-note
+      display none
+
 #context-creator
   display none
   position absolute
@@ -44,24 +74,11 @@ a
   line-height 1em
   text-align right
 
-.note
-  width 150px
-  height 30px
-  border 1px solid #eee
-  padding 5px
-
-  h2
-    font-size 1em
-    line-height 1em
-
-
-.note-item
-
-  h2
-    font-size 1.5em
-    line-height 1.5em
-
 svg
+  &.view
+    cursor pointer
+  &.note
+    cursor crosshair
   &.move
     cursor move
   &.delete

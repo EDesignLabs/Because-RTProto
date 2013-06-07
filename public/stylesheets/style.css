@@ -18,6 +18,42 @@ a {
 #note-creator.active {
   display: block;
 }
+#note-creator.add .edit {
+  display: block;
+}
+#note-creator.add .view {
+  display: none;
+}
+#note-creator.add #add-note {
+  display: block;
+}
+#note-creator.add #edit-note {
+  display: none;
+}
+#note-creator.edit .edit {
+  display: block;
+}
+#note-creator.edit .view {
+  display: none;
+}
+#note-creator.edit #add-note {
+  display: none;
+}
+#note-creator.edit #edit-note {
+  display: block;
+}
+#note-creator.view .edit {
+  display: none;
+}
+#note-creator.view .view {
+  display: block;
+}
+#note-creator.view #add-note {
+  display: none;
+}
+#note-creator.view #edit-note {
+  display: none;
+}
 #context-creator {
   display: none;
   position: absolute;
@@ -45,19 +81,11 @@ a {
   line-height: 1em;
   text-align: right;
 }
-.note {
-  width: 150px;
-  height: 30px;
-  border: 1px solid #eee;
-  padding: 5px;
+svg.view {
+  cursor: pointer;
 }
-.note h2 {
-  font-size: 1em;
-  line-height: 1em;
-}
-.note-item h2 {
-  font-size: 1.5em;
-  line-height: 1.5em;
+svg.note {
+  cursor: crosshair;
 }
 svg.move {
   cursor: move;

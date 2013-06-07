@@ -1,6 +1,7 @@
 define ["d3view"], (D3View)->
     ContextView = D3View.extend
         tagName: 'image'
+        className: 'context'
 
         initialize: (options)->
             D3View::initialize.call @,options
