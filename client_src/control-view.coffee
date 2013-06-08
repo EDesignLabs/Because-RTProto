@@ -1,4 +1,4 @@
-define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, MetadataView)->
+define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
     ControlView = Backbone.View.extend
         className: 'span12'
 
@@ -7,11 +7,18 @@ define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, Met
             @dispatcher = options.dispatcher
 
             @collaborators = @model.getCollaborators()
-            @data = @model.getModel().getRoot().get('context').get 'data'
-            @notes = @model.getModel().getRoot().get('context').get 'notes'
+            @context = @model.getModel().getRoot().get('context')
+            @data = @context.get 'data'
+            @notes = @context.get 'notes'
+            @user = @getMe()
 
             @addNoteButton = $ "#add-note"
             @editNoteButton = $ "#edit-note"
+
+            @dispatcher.on 'context:image-load', (url, width, height)=>
+                @backgroundWidth = width
+                @backgroundHeight = height
+                @backgroundUrl = url
 
             @dispatcher.on 'marker:add', (ev, context)=>
                 $ev =
@@ -70,6 +77,7 @@ define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, Met
                 creatorTitle = $("#note-creator-title")
                 url = $(".view .url")
                 desc = $(".view .description")
+                thumbnail = creator.find '.thumbnail'
 
                 url.text model.get('url').getText()
                 url.attr 'href', model.get('url').getText()
@@ -86,31 +94,52 @@ define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, Met
                     'left': ev.x
                     'top': ev.y
 
+
+                svgWidth = $(".workspace-container svg").width()
+                aspectRatio = parseInt(@backgroundWidth, 10)/parseInt(@backgroundHeight, 10)
+                proportion = parseInt(@backgroundWidth, 10)/svgWidth
+                svgHeight = svgWidth/aspectRatio
+
+                width = svgWidth #- 150 * proportion
+                height = svgHeight #- 150 * proportion
+                thumbnailX = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10)) - 75
+                thumbnailY = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10)) - 75
+
+                thumbnail.css 'background-image', "url('#{@backgroundUrl}')"
+                thumbnail.css 'background-size', "#{svgWidth}px #{svgHeight}px"
+                thumbnail.css 'background-position-x', "-#{thumbnailX}px"
+                thumbnail.css 'background-position-y', "-#{thumbnailY}px"
+
+                creator
+
                 creatorTitle.text model.get('title').getText()
-                
+
 
         render: (options)->
             @metadataView = new MetadataView
-                model: @data
+                model:
+                    context: @context
+                    user: @user
                 dispatcher: @dispatcher
                 el: @$el.find '.metadata'
 
             @toolbarView = new ToolbarView
-                model: @getMe()
+                model: @user
                 dispatcher: @dispatcher
                 el: @$el.find '.toolbar'
 
-            @addView = new AddView
-                model: @getMe()
-                dispatcher: @dispatcher
-                el: @$el.find '.add'
-
             @metadataView.render()
             @toolbarView.render()
-            @addView.render()
 
         getMe: () ->
-            _.filter(@collaborators, (item)-> item.isMe)[0]
+            me = _.filter(@collaborators, (item)-> item.isMe)[0]
+            owner = @context.get('owner')
+
+            me.isOwner = ()->
+                #if I am the owner (or no one is)
+                me.userId is owner.get('userId').getText() or not owner.get('userId').getText()
+
+            me
 
         onAddNoteClick: (ev)->
             x = ev.data.d3ev.offsetX
@@ -130,8 +159,8 @@ define ['toolbar-view', 'add-view', 'metadata-view'], (ToolbarView, AddView, Met
                 hx: @model.getModel().createString '75'
                 hy: @model.getModel().createString '-10'
                 selected: @model.getModel().createString 'false'
-                userId: @model.getModel().createString @getMe().userId
-                color: @model.getModel().createString @getMe().color
+                userId: @model.getModel().createString @user.userId
+                color: @model.getModel().createString @user.color
 
             @notes.push newNote
 

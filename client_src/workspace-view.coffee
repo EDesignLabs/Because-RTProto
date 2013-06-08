@@ -6,13 +6,13 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             Backbone.View::initialize.call @, options
             @dispatcher = options.dispatcher
 
-            #d3 select 'svg'
-            # @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
-            
-            console.log($('.workspace-container svg').get(0))
             @setElement( $('.workspace-container svg').get(0) )
 
             @d3el = d3.select @el
+
+            @d3el.attr
+                width: '100%'
+                height: '100%'
 
             @data = @model.get 'data'
 
@@ -20,6 +20,7 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                 model: @data.get 'image'
                 parent: @d3el
                 dispatcher: @dispatcher
+                insert: ':first-child'
 
             @model.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, _.bind @onObjectChanged, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
@@ -30,6 +31,11 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             @d3el.on 'mousedown', _.bind @onMouseDown, @
             @d3el.on 'mousemove', _.bind @onMouseMove, @
             @d3el.on 'mouseup', _.bind @onMouseUp, @
+
+            @dispatcher.on 'context:image-load', (url, width, height)=>
+                @d3el.attr
+                    width: @$el.width()
+                    height: @$el.width() / (width/height)
 
             @dispatcher.on 'marker:delete', (model)=>
                 index = @model.get('markers').indexOf(model)
@@ -52,6 +58,16 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                     @dispatcher.trigger 'note:add', d3.event, @model
                 if @tool.type is 'marker' and ev.target is @contextView.el
                     @dispatcher.trigger 'marker:add', d3.event, @model
+
+            @dispatcher.on 'context:image-load', (url, width, height)=>
+                _.defer _.bind ->
+                    viewWidth = $(@d3el.node()).width()
+                    viewHeight = $(@d3el.node()).width() / (width/height)
+
+                    @d3el.attr
+                        preserveAspectRatio: 'xMinYMin meet'
+                        viewBox: "0 0 #{viewWidth} #{viewHeight}"
+                , @
 
             _.each @model.get('markers').asArray(), (marker)->
                 @addMarker marker

@@ -4,9 +4,12 @@ define ["d3view"], (D3View)->
 
         initialize: (options)->
             @constructor.__super__.initialize.call @,options
-            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, this
-            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, this
-            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, this
+            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, @
+            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, @
+            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, @
+            @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
+            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onTitleChanged, @
+            @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onDescriptionChanged, @
 
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
@@ -29,19 +32,22 @@ define ["d3view"], (D3View)->
                 'cy': @model.get('hy').getText() || 25
 
         onTitleChanged: (rtEvent)->
-            unless @lineElement
-                @lineElement = @d3el.insert 'line', ':first-child' if not @lineElement
-                @lineElement.attr
-                    'id': 'handle-line-' + @model.id
-                    'x1': 75
-                    'y1': 0
-                    'x2': @model.get('hx').getText() || 200
-                    'y2': @model.get('hy').getText() || 25
-                    'stroke': 'black'
-                    'strokeWidth': 2
-                    'opacity': if @model.get('selected').getText() is 'true' then 0.0 else 1.0
-                    'data-type': 'handle-line'
-                    'data-object-id': @model.id
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderLine()
+            else
+                if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                    @renderLine()
+                else
+                    @lineElement.remove() if @lineElement
+                    delete @lineElement if @lineElement
+
+        onDescriptionChanged: (rtEvent)->
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") is ''
+                if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                    @renderLine()
+                else
+                    @lineElement.remove() if @lineElement
+                    delete @lineElement if @lineElement
 
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
@@ -100,20 +106,8 @@ define ["d3view"], (D3View)->
                 'data-type': 'handle'
                 'data-object-id': @model.id
 
-            if @model.get('title').getText()
-
-                @lineElement = @d3el.append 'line' if not @lineElement
-                @lineElement.attr
-                    'id': 'handle-line-' + @model.id
-                    'x1': 75
-                    'y1': 0
-                    'x2': @model.get('hx').getText() || 200
-                    'y2': @model.get('hy').getText() || 25
-                    'stroke': 'black'
-                    'strokeWidth': 2
-                    'opacity': if @model.get('selected').getText() is 'true' then 0.0 else 1.0
-                    'data-type': 'handle-line'
-                    'data-object-id': @model.id
+            if @model.get('title').getText() or @model.get('desc').getText()
+                @renderLine()
 
             @circleElement = @d3el.append 'circle' if not @circleElement
             @circleElement.attr
@@ -125,4 +119,18 @@ define ["d3view"], (D3View)->
                 'stroke': if @model.get('selected').getText() is 'true' then 'black' else 'darkslateblue'
                 'strokeWidth': 10
                 'data-type': 'handle-circle'
+                'data-object-id': @model.id
+
+        renderLine: ->
+            @lineElement = @d3el.insert 'line', ':first-child' if not @lineElement
+            @lineElement.attr
+                'id': 'handle-line-' + @model.id
+                'x1': 75
+                'y1': 0
+                'x2': @model.get('hx').getText() || 200
+                'y2': @model.get('hy').getText() || 25
+                'stroke': 'black'
+                'strokeWidth': 2
+                'opacity': if @model.get('selected').getText() is 'true' then 0.0 else 1.0
+                'data-type': 'handle-line'
                 'data-object-id': @model.id
