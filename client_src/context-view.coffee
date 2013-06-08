@@ -13,6 +13,8 @@ define ["d3view"], (D3View)->
             @render()
 
         render: ->
+            self = @
+
             # totes cray cray image dimension finding hack
             backgroundImage = $ "<img src=\"#{@model.getText()}\" style=\"visibility:hidden\">"
 
@@ -21,14 +23,15 @@ define ["d3view"], (D3View)->
             width = backgroundImage.width()
             height = backgroundImage.height()
 
-            backgroundImage.remove()
+            backgroundImage.load ->
+                self.dispatcher.trigger('context:image-load', self.model.getText(), $(this).width(), $(this).height())
 
-            _.defer =>
-                @dispatcher.trigger('context:image-load', @model.getText(), width, height)
-
-                @d3el.attr
+                self.d3el.attr
                     width: '100%'
                     height: '100%'
+
+                $(this).remove()
+
 
             @d3el.attr
                 'xlink:href': @model.getText()
