@@ -4,10 +4,12 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
         initialize: (options)->
             @constructor.__super__.initialize.call @,options
-            @model.get('x').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, this
-            @model.get('y').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, this
-            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, this
-            @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, this
+            @model.get('x').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
+            @model.get('y').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
+            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, @
+            @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
+            @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onTitleChanged, @
+            @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onDescriptionChanged, @
 
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
@@ -18,32 +20,28 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 'transform': "matrix(1 0 0 1 #{@model.get('x').getText()} #{@model.get('y').getText()})"
 
         onTitleChanged: (rtEvent)->
-            unless @noteRectElement
-                @noteRectElement = @d3el.append 'rect' if not @noteRectElement
-                @noteRectElement.attr
-                    'id': 'note-rect-' + @model.id
-                    'width': 150
-                    'height': 25
-                    'fill': @model.get('color')?.getText() or 'gray'
-                    'stroke': 'black'
-                    'data-type': 'note-rect'
-                    'data-object-id': @model.id
-
-            unless @titleElement
-                @titleElement = @d3el.append('text').text @model.get('title').getText() if not @titleElement
-                @titleElement.attr
-                    'id': 'note-title-' + @model.id
-                    'style': 'fill:white;stroke:none'
-                    'x': 5
-                    'y': 18
-                    'font-size': 12
-                    'data-type': 'title'
-                    'data-object-id': @model.id
-
-            @titleElement.text @model.get('title').getText()
-               
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderTitle(@model.get('title').getText())
+            else
+                if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") is ''
+                    @noteRectElement.remove() if @noteRectElement
+                    @titleElement.remove() if @titleElement
+                    delete @noteRectElement if @noteRectElement
+                    delete @titleElement if @titleElement
+                else
+                    abridged = @model.get('desc').getText().substr(0,15) + '...'
+                    @renderTitle(abridged)
 
         onDescriptionChanged: (rtEvent)->
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") is ''
+                if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                    abridged = @model.get('desc').getText().substr(0,15) + '...'
+                    @renderTitle(abridged)
+                else
+                    @noteRectElement.remove() if @noteRectElement
+                    @titleElement.remove() if @titleElement
+                    delete @noteRectElement if @noteRectElement
+                    delete @titleElement if @titleElement
 
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
@@ -85,7 +83,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                         'stroke': 'red'
                 else
                     @noteRectElement?.attr
-                        'stroke': 'black'                    
+                        'stroke': 'black'
 
 
         onToolRelease: (ev, tool)->
@@ -109,8 +107,23 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 'data-type': 'note'
                 'data-object-id': @model.id
 
-            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
+            abridged = @model.get('desc').getText().substr(0,18) + '...'
 
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderTitle(@model.get('title').getText())
+            else if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderTitle(abridged)
+
+            if not @handleView
+                @handleView = new HandleView
+                    model: @model
+                    parent: @d3el
+                    dispatcher: @dispatcher
+
+                @handleView.render()
+
+        renderTitle: (title)->
+            unless @noteRectElement
                 @noteRectElement = @d3el.append 'rect' if not @noteRectElement
                 @noteRectElement.attr
                     'id': 'note-rect-' + @model.id
@@ -121,7 +134,8 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     'data-type': 'note-rect'
                     'data-object-id': @model.id
 
-                @titleElement = @d3el.append('text').text @model.get('title').getText() if not @titleElement
+            unless @titleElement
+                @titleElement = @d3el.append('text') if not @titleElement
                 @titleElement.attr
                     'id': 'note-title-' + @model.id
                     'style': 'fill:white;stroke:none'
@@ -131,10 +145,5 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     'data-type': 'title'
                     'data-object-id': @model.id
 
-            if not @handleView
-                @handleView = new HandleView
-                    model: @model
-                    parent: @d3el
-                    dispatcher: @dispatcher
+            @titleElement.text title
 
-                @handleView.render()

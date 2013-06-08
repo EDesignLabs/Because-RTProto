@@ -10,6 +10,10 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @d3el = d3.select @el
 
+            @d3el.attr
+                width: '100%'
+                height: '100%'
+
             @data = @model.get 'data'
 
             @contextView = new ContextView
@@ -48,6 +52,16 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                     @dispatcher.trigger 'note:add', d3.event, @model
                 if @tool.type is 'marker' and ev.target is @contextView.el
                     @dispatcher.trigger 'marker:add', d3.event, @model
+
+            @dispatcher.on 'context:image-load', (url, width, height)=>
+                _.defer _.bind ->
+                    width = $(@d3el.node()).width()
+                    height = $(@d3el.node()).height()
+
+                    @d3el.attr
+                        preserveAspectRatio: 'xMinYMin meet'
+                        viewBox: "0 0 #{width} #{height}"
+                , @
 
             _.each @model.get('markers').asArray(), (marker)->
                 @addMarker marker

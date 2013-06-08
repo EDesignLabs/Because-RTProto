@@ -1,11 +1,22 @@
 body
-  padding: 50px
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif
 a
   color: #00B7FF
 
+.control
+  .btn-group-vertical
+    .btn
+      width: 100%
+
+.metadata
+  margin-bottom 5px
+  border-bottom 1px solid #eee
+
+  .display-context-creator
+    display: none
+
 #notes
-  height 800px
+  height 100%
 
 #note-creator
   display none
@@ -47,6 +58,12 @@ a
     #edit-note
       display none
 
+  .thumbnail
+    margin 0 auto
+    width 150px
+    height 150px
+    background-repeat no-repeat
+
 #context-creator
   display none
   position absolute
@@ -61,18 +78,23 @@ a
   height 250px
   overflow-y scroll
 
-.collaborator
-  display block
-  padding 2px
-  margin 0 0 2px 0
-  border 1px solid black
-  width 100%
-  background-size contain
-  background-repeat no-repeat
-  color white
-  font-size 9px
-  line-height 1em
-  text-align right
+#collaborators
+  width 100px
+  margin-left 0
+
+  .collaborator
+    display block
+    padding 2px
+    margin 0 0 2px 0
+    border 1px solid black
+    width 100%
+    background-size contain
+    background-repeat no-repeat
+    color white
+    font-size 9px
+    line-height 1em
+    text-align right
+    box-sizing border-box
 
 svg
   &.view
