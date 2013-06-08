@@ -37,6 +37,8 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 creator.toggleClass 'edit', no
                 creator.toggleClass 'view', no
 
+                @centerThumbnail ev.x, ev.y
+
                 creator.modal
                     'show': yes
 
@@ -54,6 +56,7 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 title = $("#title")
                 url = $("#url")
                 desc = $("#desc")
+                thumbnail = creator.find '.thumbnail'
 
                 creator.toggleClass 'add', no
                 creator.toggleClass 'edit', yes
@@ -66,6 +69,11 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                     'left': ev.x
                     'top': ev.y
 
+                x = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10))
+                y = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10))
+
+                @centerThumbnail x, y
+
                 creatorTitle.text model.get('title').getText()
 
                 title.val model.get('title').getText()
@@ -77,7 +85,6 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 creatorTitle = $("#note-creator-title")
                 url = $(".view .url")
                 desc = $(".view .description")
-                thumbnail = creator.find '.thumbnail'
 
                 url.text model.get('url').getText()
                 url.attr 'href', model.get('url').getText()
@@ -94,25 +101,30 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                     'left': ev.x
                     'top': ev.y
 
+                x = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10))
+                y = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10))
 
-                svgWidth = $(".workspace-container svg").width()
-                aspectRatio = parseInt(@backgroundWidth, 10)/parseInt(@backgroundHeight, 10)
-                proportion = parseInt(@backgroundWidth, 10)/svgWidth
-                svgHeight = svgWidth/aspectRatio
-
-                width = svgWidth #- 150 * proportion
-                height = svgHeight #- 150 * proportion
-                thumbnailX = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10)) - 75
-                thumbnailY = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10)) - 75
-
-                thumbnail.css 'background-image', "url('#{@backgroundUrl}')"
-                thumbnail.css 'background-size', "#{svgWidth}px #{svgHeight}px"
-                thumbnail.css 'background-position-x', "-#{thumbnailX}px"
-                thumbnail.css 'background-position-y', "-#{thumbnailY}px"
-
-                creator
+                @centerThumbnail x, y
 
                 creatorTitle.text model.get('title').getText()
+
+        centerThumbnail: (x, y)->
+            thumbnail = $("#note-creator .thumbnail")
+
+            svgWidth = $(".workspace-container svg").width()
+            aspectRatio = parseInt(@backgroundWidth, 10)/parseInt(@backgroundHeight, 10)
+            proportion = parseInt(@backgroundWidth, 10)/svgWidth
+            svgHeight = svgWidth/aspectRatio
+
+            width = svgWidth #- 150 * proportion
+            height = svgHeight #- 150 * proportion
+            thumbnailX = x - 75
+            thumbnailY = y - 75
+
+            thumbnail.css 'background-image', "url('#{@backgroundUrl}')"
+            thumbnail.css 'background-size', "#{svgWidth}px #{svgHeight}px"
+            thumbnail.css 'background-position-x', "-#{thumbnailX}px"
+            thumbnail.css 'background-position-y', "-#{thumbnailY}px"
 
 
         render: (options)->
@@ -159,8 +171,8 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 hx: @model.getModel().createString '75'
                 hy: @model.getModel().createString '-10'
                 selected: @model.getModel().createString 'false'
-                userId: @model.getModel().createString @user.userId
-                color: @model.getModel().createString @user.color
+                userId: @model.getModel().createString if @user.isOwner() then '' else @user.userId
+                color: @model.getModel().createString if @user.isOwner() then 'gray' else @user.color
 
             @notes.push newNote
 
@@ -182,6 +194,10 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
             model.get('title').setText title.val()
             model.get('desc').setText desc.val()
             model.get('url').setText url.val()
+
+            if model.get('userId').getText() is '' and not @user.isOwner()
+                model.get('userId').setText @user.userId
+                model.get('color').setText @user.color
 
             title.val ''
             desc.val ''

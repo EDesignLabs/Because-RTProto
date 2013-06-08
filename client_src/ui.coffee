@@ -1,4 +1,4 @@
-define ["realtime-client-utils", "workspace-view", "control-view"], (util, WorkspaceView, ControlView)->
+define ["realtime-client-utils", "collaborators-view", "workspace-view", "control-view"], (util, CollaboratorsView, WorkspaceView, ControlView)->
   ###
   This function is called the first time that the Realtime model is created
   for a file. This function should be used to initialize any values of the
@@ -9,7 +9,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
   ###
   initializeModel = (model) ->
     notes = model.createList()
-    markers = model.createList()
     data = model.createMap
       title: model.createString "Title or question"
       desc: model.createString "Instuctions or description"
@@ -17,7 +16,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       spreadsheet: model.createString ""
     context = model.createMap
       notes: notes
-      markers: markers
       data: data
       phase: model.createString "1"
       owner: model.createMap
@@ -36,26 +34,13 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     model = doc.getModel();
     root = model.getRoot()
     context = root.get 'context'
-    notes = context.get 'notes'
-    markers = context.get 'markers'
-    data = context.get 'data'
-    backgroundImage = data.get 'image'
-    collaborators = doc.getCollaborators()
 
     dispatcher = _.clone Backbone.Events
 
-    collaboratorsChanged = (e) ->
-      collaboratorsElement = $ "#collaborators"
-      collaboratorsElement.empty()
-
-      collaborators = doc.getCollaborators()
-
-      $.each collaborators, (index, collaborator)->
-        collaboratorElement = """<span class="collaborator" style="background-color: #{collaborator.color};">#{collaborator.displayName}</span>"""
-        collaboratorsElement.append collaboratorElement
-
-    getMe = () ->
-      _.filter(collaborators, (item)-> item.isMe)[0]
+    collaboratorsView = new CollaboratorsView
+      model: doc
+      el: $('#collaborators')
+      dispatcher: dispatcher
 
     workspaceView = new WorkspaceView
       model: context
@@ -66,15 +51,11 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
       el: $('.control')
       dispatcher: dispatcher
 
+    collaboratorsView.render()
     workspaceView.render()
     controlView.render()
 
     $('.workspace-container').append workspaceView.$el
-
-    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
-    doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
-
-    collaboratorsChanged()
 
   realtimeOptions =
 
