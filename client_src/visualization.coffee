@@ -1,4 +1,8 @@
 define "visualization", ->
+  
+  # TODO: Update the graph with Tabletop data when it's available
+  # TODO: Add the ability to update the graph
+  # TODO: Add the ability to replace the graph
     
   pullDataFromGoogleSpreadsheet = (url) ->
     Tabletop.init
@@ -9,14 +13,24 @@ define "visualization", ->
   generateGraph = (dataset, tabletop) ->
     workspace = document.querySelector ".workspace-container"
     
-    keys = _.keys dataset[0]
-    labels =
-      x: keys[0].charAt(0).toUpperCase() + keys[0].slice(1)
-      y: keys[1].charAt(0).toUpperCase() + keys[1].slice(1)
+    # TODO: This needs to be refactored badly
+    if dataset?
+      keys = _.keys dataset[0]
+      labels =
+        x: keys[0].charAt(0).toUpperCase() + keys[0].slice(1)
+        y: keys[1].charAt(0).toUpperCase() + keys[1].slice(1)
 
-    dataset = _.map dataset, (data, key) ->
-      x: parseInt(data[keys[0]], 10)
-      y: parseFloat(data[keys[1]], 10)
+      dataset = _.map dataset, (data, key) ->
+        x: parseInt(data[keys[0]], 10)
+        y: parseFloat(data[keys[1]], 10)
+    else
+      dataset = [
+        x: 0
+        y: 0
+      ]
+      labels =
+        x: "X-Axis"
+        y: "Y-Axis"
       
     graph = new Rickshaw.Graph
       element: workspace
@@ -49,6 +63,6 @@ define "visualization", ->
   
   return {
       initialize: (callback) -> 
-        pullDataFromGoogleSpreadsheet "https://docs.google.com/spreadsheet/pub?key=0Ar2Io2uAtw9TdEFvb2t5U3BiZDhQRlNSRjRTY3Q2Rmc&output=html"
+        generateGraph()
         callback() if callback?
   }
