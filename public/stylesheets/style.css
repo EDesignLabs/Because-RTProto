@@ -1,12 +1,21 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 a {
   color: #00b7ff;
 }
+.control .btn-group-vertical .btn {
+  width: 100%;
+}
+.metadata {
+  margin-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+.metadata .display-context-creator {
+  display: none;
+}
 #notes {
-  height: 800px;
+  height: 100%;
 }
 #note-creator {
   display: none;
@@ -54,6 +63,12 @@ a {
 #note-creator.view #edit-note {
   display: none;
 }
+#note-creator .thumbnail {
+  margin: 0 auto;
+  width: 150px;
+  height: 150px;
+  background-repeat: no-repeat;
+}
 #context-creator {
   display: none;
   position: absolute;
@@ -68,7 +83,11 @@ a {
   height: 250px;
   overflow-y: scroll;
 }
-.collaborator {
+#collaborators {
+  width: 100px;
+  margin-left: 0;
+}
+#collaborators .collaborator {
   display: block;
   padding: 2px;
   margin: 0 0 2px 0;
@@ -80,6 +99,7 @@ a {
   font-size: 9px;
   line-height: 1em;
   text-align: right;
+  box-sizing: border-box;
 }
 svg.view {
   cursor: pointer;

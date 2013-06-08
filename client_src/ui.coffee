@@ -42,20 +42,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
     backgroundImage = data.get 'image'
     collaborators = doc.getCollaborators()
 
-    # Keeping one box updated with a String binder.
-    title = $("#title")
-    desc = $("#desc")
-    url = $("#url")
-    viewTool = $("#view-tool")
-    moveTool = $("#move-tool")
-    editTool = $("#edit-tool")
-    deleteTool = $("#delete-tool")
-    addContextButton = $("#add-context")
-    displayNoteCreator = $('#display-note-creator')
-    displayContextCreator = $('#display-context-creator')
-    closeModalButton = $('.hide-modal')
-    notesElement = d3.select '#notes'
-
     dispatcher = _.clone Backbone.Events
 
     collaboratorsChanged = (e) ->
@@ -87,28 +73,6 @@ define ["realtime-client-utils", "workspace-view", "control-view"], (util, Works
 
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_JOINED, collaboratorsChanged
     doc.addEventListener gapi.drive.realtime.EventType.COLLABORATOR_LEFT, collaboratorsChanged
-
-    displayNoteCreator.click (e)->
-      $("#note-creator").toggle()
-
-    displayContextCreator.click (e)->
-      $("#context-creator").toggle()
-
-    closeModalButton.click (e) ->
-      $(this).parent().hide()
-
-    addContextButton.click (e)->
-      $("#note-creator").hide()
-      imageUrl = $("#image-url")
-      documentTitle = $("#document-title")
-      documentDesc = $("#document-desc")
-
-      backgroundImage.setText imageUrl.val()
-      data.get('title').setText documentTitle.val()
-      data.get('desc').setText documentDesc.val()
-      data.get('owner').get('userId').setText getMe().userId
-      data.get('owner').get('color').setText getMe().color
-      $("#context-creator").hide()
 
     collaboratorsChanged()
 
