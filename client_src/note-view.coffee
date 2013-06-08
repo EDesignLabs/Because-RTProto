@@ -6,6 +6,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             @constructor.__super__.initialize.call @,options
             @model.get('x').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
             @model.get('y').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
+            @model.get('color').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onColorChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, @
             @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onTitleChanged, @
@@ -14,6 +15,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
             @dispatcher.on 'tool:release', _.bind @onToolRelease, @
+            @dispatcher.on 'collaborator:selected', _.bind @onCollaboratorSelected, @
 
         onHandlePositionChanged: (rtEvent)->
             @d3el.attr
@@ -21,7 +23,9 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
         onTitleChanged: (rtEvent)->
             if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
-                @renderTitle(@model.get('title').getText())
+                abridgedTitle = @model.get('title').getText().substr(0,18)
+                abridgedTitle += '...' if @model.get('title').getText().length > 18
+                @renderTitle(abridgedTitle)
             else
                 if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") is ''
                     @noteRectElement.remove() if @noteRectElement
@@ -43,6 +47,10 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     delete @noteRectElement if @noteRectElement
                     delete @titleElement if @titleElement
 
+        onColorChanged: (rtEvent)->
+            @noteRectElement.attr
+                'fill': @model.get('color').getText() || 'gray'
+
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
@@ -50,7 +58,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
                 @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
 
-                if @model.get('userId').getText() isnt tool.user.userId
+                if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
                     @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'note'
 
                 else
@@ -90,6 +98,14 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             target = d3.select ev.target
 
             if @engaged
+                if @model.get('userId').getText() is '' and not tool.user.isOwner()
+                    @model.get('userId').setText tool.user.userId
+                    @model.get('color').setText tool.user.color
+
+                if tool.user.isOwner()
+                    @model.get('userId').setText ''
+                    @model.get('color').setText 'gray'
+
                 if tool.type is 'move'
                     matrix = @d3el.attr('transform').slice(7, -1).split(' ')
                     @model.get('x').setText matrix[4]
@@ -97,6 +113,12 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
                     @engaged = false
 
+        onCollaboratorSelected: (collaborator)->
+            if collaborator.userId is @model.get('userId').getText() and @noteRectElement? and @titleElement?
+                @noteRectElement.transition().attr('fill','white').duration(200)
+                @titleElement.transition().attr('fill','black').duration(200)
+                @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').delay(1000).duration(200)
+                @titleElement.transition().attr('fill','white').delay(1000).duration(200)
 
         render: ->
             @d3el.attr
@@ -107,12 +129,9 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 'data-type': 'note'
                 'data-object-id': @model.id
 
-            abridged = @model.get('desc').getText().substr(0,18) + '...'
-
-            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
-                @renderTitle(@model.get('title').getText())
-            else if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
-                @renderTitle(abridged)
+            abridgedTitle = @model.get('title').getText().substr(0,18)
+            abridgedTitle += '...' if @model.get('title').getText().length > 18
+            abridgedDesc = @model.get('desc').getText().substr(0,18) + '...'
 
             if not @handleView
                 @handleView = new HandleView
@@ -121,6 +140,11 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     dispatcher: @dispatcher
 
                 @handleView.render()
+
+            if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderTitle(abridgedTitle)
+            else if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
+                @renderTitle(abridgedDesc)
 
         renderTitle: (title)->
             unless @noteRectElement
@@ -138,7 +162,8 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 @titleElement = @d3el.append('text') if not @titleElement
                 @titleElement.attr
                     'id': 'note-title-' + @model.id
-                    'style': 'fill:white;stroke:none'
+                    'fill': 'white'
+                    'stroke': 'none'
                     'x': 5
                     'y': 18
                     'font-size': 12

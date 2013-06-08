@@ -6,6 +6,7 @@ define ["d3view"], (D3View)->
             @constructor.__super__.initialize.call @,options
             @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, @
             @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, @
+            @model.get('color').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onColorChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, @
             @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onTitleChanged, @
@@ -14,6 +15,7 @@ define ["d3view"], (D3View)->
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
             @dispatcher.on 'tool:release', _.bind @onToolRelease, @
+            @dispatcher.on 'collaborator:selected', _.bind @onCollaboratorSelected, @
 
         onHandleXChanged: (rtEvent)->
             if @lineElement
@@ -30,6 +32,10 @@ define ["d3view"], (D3View)->
 
             @circleElement.attr
                 'cy': @model.get('hy').getText() || 25
+
+        onColorChanged: (rtEvent)->
+            @circleElement.attr
+                'fill': @model.get('color').getText() || 'gray'
 
         onTitleChanged: (rtEvent)->
             if @model.get('title').getText().replace(/^\s+|\s+$/g, "") isnt ''
@@ -58,7 +64,7 @@ define ["d3view"], (D3View)->
 
                 @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
 
-                if @model.get('userId').getText() isnt tool.user.userId
+                if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
                     @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'note'
 
                 else
@@ -92,6 +98,14 @@ define ["d3view"], (D3View)->
             target = d3.select ev.target
 
             if @engaged
+                if @model.get('userId').getText() is '' and not tool.user.isOwner()
+                    @model.get('userId').setText tool.user.userId
+                    @model.get('color').setText tool.user.color
+
+                if tool.user.isOwner()
+                    @model.get('userId').setText ''
+                    @model.get('color').setText 'gray'
+
                 if tool.type is 'move'
                     cx = @circleElement.attr 'cx'
                     cy = @circleElement.attr 'cy'
@@ -99,6 +113,11 @@ define ["d3view"], (D3View)->
                     @model.get('hy').setText cy
 
                     @engaged = false
+
+        onCollaboratorSelected: (collaborator)->
+            if collaborator.userId is @model.get('userId').getText() and @circleElement?
+                @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
+                @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).delay(1000).duration(200)
 
         render: ->
             @d3el.attr
@@ -126,7 +145,7 @@ define ["d3view"], (D3View)->
             @lineElement.attr
                 'id': 'handle-line-' + @model.id
                 'x1': 75
-                'y1': 0
+                'y1': 12
                 'x2': @model.get('hx').getText() || 200
                 'y2': @model.get('hy').getText() || 25
                 'stroke': 'black'

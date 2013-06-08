@@ -37,11 +37,11 @@
     <div class="row metadata">
       <div class="span8">
         <h1 class="title"></h1>
+        <button class="display-context-creator btn">Change Context</button>
       </div>
 
       <div class="span4">
         <article class="description"></article>
-        <button class="display-context-creator btn">Change Context</button>
       </div>
 
       <div id="note-creator" class="modal hide fade add">

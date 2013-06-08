@@ -7,7 +7,7 @@ define ->
             @model.addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, this
 
         render: (options)->
-            @$el.text @model.getText()
+            @$el.html "<p>" + @model.getText().split("\n").join("</p><p>") + "</p>"
 
         onDescriptionChanged: (rtEvent)->
-            @$el.text @model.getText()
+            @$el.html @model.getText().replace /\n/g, "</p>"

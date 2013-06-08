@@ -11,8 +11,45 @@ a {
   margin-bottom: 5px;
   border-bottom: 1px solid #eee;
 }
+.metadata div {
+  position: relative;
+}
 .metadata .display-context-creator {
   display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.metadata .description {
+  position: absolute;
+  width: 350px;
+  background: #eee;
+  z-index: 2;
+  padding: 10px;
+  height: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.metadata .description p:first-child {
+  display: block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+.metadata .description p {
+  display: none;
+}
+.metadata .description:hover {
+  white-space: normal;
+}
+.metadata .description:hover p:first-child {
+  text-overflow: inherit;
+  white-space: normal;
+  overflow-x: inherit;
+}
+.metadata .description:hover p {
+  display: block;
 }
 #notes {
   height: 100%;
@@ -34,7 +71,7 @@ a {
   display: none;
 }
 #note-creator.add .thumbnail {
-  display: none;
+  display: block;
 }
 #note-creator.add #add-note {
   display: block;
@@ -97,7 +134,7 @@ a {
   margin-left: 0;
 }
 #collaborators .collaborator {
-  display: block;
+  display: none;
   padding: 2px;
   margin: 0 0 2px 0;
   border: 1px solid #000;
@@ -109,6 +146,9 @@ a {
   line-height: 1em;
   text-align: right;
   box-sizing: border-box;
+}
+#authorizeButton[disabled] {
+  display: none;
 }
 svg.view {
   cursor: pointer;

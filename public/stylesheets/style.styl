@@ -12,8 +12,45 @@ a
   margin-bottom 5px
   border-bottom 1px solid #eee
 
+  div
+    position relative
+
   .display-context-creator
     display: none
+    position: absolute
+    top: 0
+    right: 0
+
+  .description
+    position absolute
+    width 350px
+    background #eee
+    z-index 2
+    padding 10px
+    height auto
+    overflow-y hidden
+    white-space nowrap
+    text-overflow ellipsis
+
+    p:first-child
+      display block
+      text-overflow ellipsis
+      white-space nowrap
+      overflow-x hidden
+
+    p
+      display: none
+
+    &:hover
+      white-space normal
+
+      p:first-child
+        text-overflow inherit
+        white-space normal
+        overflow-x inherit
+
+      p
+        display block
 
 #notes
   height 100%
@@ -34,7 +71,7 @@ a
     .view
       display none
     .thumbnail
-      display none
+      display block
     #add-note
       display block
     #edit-note
@@ -89,7 +126,7 @@ a
   margin-left 0
 
   .collaborator
-    display block
+    display none
     padding 2px
     margin 0 0 2px 0
     border 1px solid black
@@ -101,6 +138,9 @@ a
     line-height 1em
     text-align right
     box-sizing border-box
+
+#authorizeButton[disabled]
+  display none
 
 svg
   &.view
