@@ -94,15 +94,21 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                     'left': ev.x
                     'top': ev.y
 
-                width = parseInt(@backgroundWidth) - 150
-                height = parseInt(@backgroundHeight) - 150
-                thumbnailX = parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10) - 75
-                thumbnailY = parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10) - 75
+
+                svgWidth = $(".workspace-container svg").width()
+                aspectRatio = parseInt(@backgroundWidth, 10)/parseInt(@backgroundHeight, 10)
+                proportion = parseInt(@backgroundWidth, 10)/svgWidth
+                svgHeight = svgWidth/aspectRatio
+
+                width = svgWidth #- 150 * proportion
+                height = svgHeight #- 150 * proportion
+                thumbnailX = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10)) - 75
+                thumbnailY = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10)) - 75
 
                 thumbnail.css 'background-image', "url('#{@backgroundUrl}')"
-                thumbnail.css 'background-size', "#{width}px #{height}px"
-                thumbnail.css 'background-position-x', "#{thumbnailX/width*100}%"
-                thumbnail.css 'background-position-y', "#{thumbnailY/height*100}%"
+                thumbnail.css 'background-size', "#{svgWidth}px #{svgHeight}px"
+                thumbnail.css 'background-position-x', "-#{thumbnailX}px"
+                thumbnail.css 'background-position-y', "-#{thumbnailY}px"
 
                 creator
 

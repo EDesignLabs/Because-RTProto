@@ -23,13 +23,18 @@ define ["d3view"], (D3View)->
 
             backgroundImage.remove()
 
-            @dispatcher.trigger('context:image-load', @model.getText(), width, height)
+            _.defer =>
+                @dispatcher.trigger('context:image-load', @model.getText(), width, height)
+
+                @d3el.attr
+                    width: '100%'
+                    height: '100%'
 
             @d3el.attr
                 'xlink:href': @model.getText()
                 x: '0'
                 y: '0'
-                height: '100%'
                 width: '100%'
+                height: '100%'
                 preserveAspectRatio: 'xMinYMin meet'
                 viewBox: "0 0 #{width} #{height}"
