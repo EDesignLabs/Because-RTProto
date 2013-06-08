@@ -6,7 +6,11 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             Backbone.View::initialize.call @, options
             @dispatcher = options.dispatcher
 
-            @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
+            #d3 select 'svg'
+            # @setElement document.createElementNS('http://www.w3.org/2000/svg','svg')
+            
+            console.log($('.workspace-container svg').get(0))
+            @setElement( $('.workspace-container svg').get(0) )
 
             @d3el = d3.select @el
 
