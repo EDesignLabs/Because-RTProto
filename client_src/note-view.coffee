@@ -16,6 +16,10 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
             @dispatcher.on 'tool:release', _.bind @onToolRelease, @
             @dispatcher.on 'collaborator:selected', _.bind @onCollaboratorSelected, @
+            @dispatcher.on 'note:highlight', _.bind @onNoteHighlight, @
+            @dispatcher.on 'note:unhighlight', _.bind @onNoteUnhighlight, @
+
+            @highlighted is no
 
         onHandlePositionChanged: (rtEvent)->
             @d3el.attr
@@ -56,17 +60,15 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
             if target.attr('data-object-id') is @model.id and (target.attr('data-type') is 'note-rect' or target.attr('data-type') is 'title')
 
-                @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
-
                 if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
-                    @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'note'
+                    @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'marker'
 
                 else
                     #user-restricted actions are below here
 
                     @dispatcher.trigger 'note:delete', @model if tool.type is 'delete'
 
-                    @dispatcher.trigger 'note:edit', d3.event, @model if tool.type is 'note'
+                    @dispatcher.trigger 'note:edit', d3.event, @model if tool.type is 'marker'
 
                     if tool.type is 'move'
                         @engaged = true
@@ -87,12 +89,9 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                     @d3el.attr 'transform', "matrix(1 0 0 1 #{x} #{y})"
             else
                 if target.attr('data-object-id') is @model.id
-                    @noteRectElement?.attr
-                        'stroke': 'red'
+                    @dispatcher.trigger 'note:highlight', @model unless @highlighted
                 else
-                    @noteRectElement?.attr
-                        'stroke': 'black'
-
+                    @dispatcher.trigger 'note:unhighlight', @model if @highlighted
 
         onToolRelease: (ev, tool)->
             target = d3.select ev.target
@@ -115,10 +114,31 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
         onCollaboratorSelected: (collaborator)->
             if collaborator.userId is @model.get('userId').getText() and @noteRectElement? and @titleElement?
-                @noteRectElement.transition().attr('fill','white').duration(200)
-                @titleElement.transition().attr('fill','black').duration(200)
-                @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').delay(1000).duration(200)
-                @titleElement.transition().attr('fill','white').delay(1000).duration(200)
+                @blink()
+
+        onNoteHighlight: (model)->
+            if model.id is @model.id
+                @highlight()
+
+        onNoteUnhighlight: (model)->
+            if model.id is @model.id
+                @unhighlight()
+
+        blink: ->
+            @noteRectElement.transition().attr('fill','white').duration(200)
+            @titleElement.transition().attr('fill','black').duration(200)
+            @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').delay(500).duration(200)
+            @titleElement.transition().attr('fill','white').delay(500).duration(200)
+
+        highlight: ->
+            @noteRectElement.transition().attr('fill','white').duration(200)
+            @titleElement.transition().attr('fill','black').duration(200)
+            @highlighted = yes
+
+        unhighlight: ->
+            @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').duration(200)
+            @titleElement.transition().attr('fill','white').duration(200)
+            @highlighted = no
 
         render: ->
             @d3el.attr

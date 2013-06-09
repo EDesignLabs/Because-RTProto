@@ -88,9 +88,7 @@
 
     <div class="row">
       <div data-toggle="buttons-radio" class="span1 toolbar btn-group btn-group-vertical">
-        <button id="view-tool" class="btn active">View</button>
         <button id="marker-tool" class="btn">Marker</button>
-        <button id="note-tool" class="btn">Note</button>
         <button id="move-tool" class="btn">Move</button>
         <button id="delete-tool" class="btn">Delete</button>
       </div>
