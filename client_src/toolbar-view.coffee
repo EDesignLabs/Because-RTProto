@@ -5,15 +5,13 @@ define ->
             Backbone.View::initialize.call @, options
             @dispatcher = options.dispatcher
 
-            @viewTool = @$el.find '#view-tool'
             @markerTool = @$el.find '#marker-tool'
-            @noteTool = @$el.find '#note-tool'
             @moveTool = @$el.find '#move-tool'
             @deleteTool = @$el.find '#delete-tool'
 
-            @viewTool.click (e)=>
+            @markerTool.click (e)=>
               @dispatcher.trigger 'tool:set',
-                type: 'view'
+                type: 'marker'
                 user: @model
 
             @moveTool.click (e)=>
@@ -21,21 +19,16 @@ define ->
                 type: 'move'
                 user: @model
 
-            @markerTool.click (e)=>
-              @dispatcher.trigger 'tool:set',
-                type: 'marker'
-                user: @model
-
-            @noteTool.click (e)=>
-              @dispatcher.trigger 'tool:set',
-                type: 'note'
-                user: @model
-
             @deleteTool.click (e)=>
               @dispatcher.trigger 'tool:set',
                 type: 'delete'
                 user: @model
 
+            @dispatcher.on 'tool:set', (tool)=>
+                @markerTool.toggleClass 'active', tool.type is 'marker'
+                @moveTool.toggleClass 'active', tool.type is 'move'
+                @deleteTool.toggleClass 'active', tool.type is 'delete'
+
             @dispatcher.trigger 'tool:set',
-                type: 'view'
+                type: 'marker'
                 user: @model

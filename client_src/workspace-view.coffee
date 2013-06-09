@@ -41,15 +41,11 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @dispatcher.on 'tool:set', (tool)=>
                 @tool = tool
-                @d3el.classed('view', @tool.type is 'view')
                 @d3el.classed('marker', @tool.type is 'marker')
-                @d3el.classed('note', @tool.type is 'note')
                 @d3el.classed('move', @tool.type is 'move')
                 @d3el.classed('delete', @tool.type is 'delete')
 
             @dispatcher.on 'tool:engage', (ev, tool)=>
-                if @tool.type is 'note' and ev.target is @contextView.el
-                    @dispatcher.trigger 'note:add', d3.event, @model
                 if @tool.type is 'marker' and ev.target is @contextView.el
                     @dispatcher.trigger 'marker:add', d3.event, @model
 

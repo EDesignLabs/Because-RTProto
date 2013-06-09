@@ -146,14 +146,12 @@ a {
   line-height: 1em;
   text-align: right;
   box-sizing: border-box;
+  cursor: pointer;
 }
 #authorizeButton[disabled] {
   display: none;
 }
-svg.view {
-  cursor: pointer;
-}
-svg.note {
+svg.marker {
   cursor: crosshair;
 }
 svg.move {

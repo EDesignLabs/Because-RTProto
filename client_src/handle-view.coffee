@@ -16,6 +16,10 @@ define ["d3view"], (D3View)->
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
             @dispatcher.on 'tool:release', _.bind @onToolRelease, @
             @dispatcher.on 'collaborator:selected', _.bind @onCollaboratorSelected, @
+            @dispatcher.on 'note:highlight', _.bind @onNoteHighlight, @
+            @dispatcher.on 'note:unhighlight', _.bind @onNoteUnhighlight, @
+
+            @highlighted = no
 
         onHandleXChanged: (rtEvent)->
             if @lineElement
@@ -62,17 +66,15 @@ define ["d3view"], (D3View)->
 
             if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle'
 
-                @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'view'
-
                 if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
-                    @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'note'
+                    @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'marker'
 
                 else
                     #user-restricted actions are below here
 
                     @dispatcher.trigger 'note:delete', @model if tool.type is 'delete'
 
-                    @dispatcher.trigger 'note:edit', d3.event, @model if tool.type is 'note'
+                    @dispatcher.trigger 'note:edit', d3.event, @model if tool.type is 'marker'
 
                     if tool.type is 'move'
                         @engaged = true
@@ -93,6 +95,11 @@ define ["d3view"], (D3View)->
                     @circleElement.attr 'cy', y
                     @lineElement.attr 'x2', x if @lineElement
                     @lineElement.attr 'y2', y if @lineElement
+            else
+                if target.attr('data-object-id') is @model.id
+                    @dispatcher.trigger 'note:highlight', @model unless @highlighted
+                else
+                    @dispatcher.trigger 'note:unhighlight', @model if @highlighted
 
         onToolRelease: (ev, tool)->
             target = d3.select ev.target
@@ -116,8 +123,27 @@ define ["d3view"], (D3View)->
 
         onCollaboratorSelected: (collaborator)->
             if collaborator.userId is @model.get('userId').getText() and @circleElement?
-                @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
-                @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).delay(1000).duration(200)
+                @blink()
+
+        onNoteHighlight: (model)->
+            if model.id is @model.id
+                @highlight()
+
+        onNoteUnhighlight: (model)->
+            if model.id is @model.id
+                @unhighlight()
+
+        blink: ->
+            @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
+            @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).delay(500).duration(200)
+
+        highlight: ->
+            @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
+            @highlighted = yes
+
+        unhighlight: ->
+            @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).duration(200)
+            @highlighted = no
 
         render: ->
             @d3el.attr

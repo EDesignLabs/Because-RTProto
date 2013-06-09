@@ -167,7 +167,7 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 desc: @model.getModel().createString desc.val()
                 url: @model.getModel().createString url.val()
                 x: @model.getModel().createString (x-75) + ''
-                y: @model.getModel().createString y + ''
+                y: @model.getModel().createString (y+10) + ''
                 hx: @model.getModel().createString '75'
                 hy: @model.getModel().createString '-10'
                 selected: @model.getModel().createString 'false'
