@@ -29,6 +29,11 @@ define ->
                 @moveTool.toggleClass 'active', tool.type is 'move'
                 @deleteTool.toggleClass 'active', tool.type is 'delete'
 
+            @dispatcher.on 'workspace:request-tool', (tool)=>
+                @dispatcher.trigger 'tool:set',
+                    type: tool.type
+                    user: @model
+
             @dispatcher.trigger 'tool:set',
                 type: 'marker'
                 user: @model

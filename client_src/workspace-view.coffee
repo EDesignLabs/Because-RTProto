@@ -22,7 +22,6 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                 dispatcher: @dispatcher
                 insert: ':first-child'
 
-            @model.addEventListener gapi.drive.realtime.EventType.OBJECT_CHANGED, _.bind @onObjectChanged, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
             @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind @onNotesRemoved, @
 
@@ -38,6 +37,8 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
             @dispatcher.on 'note:delete', (model)=>
                 index = @model.get('notes').indexOf(model)
                 @model.get('notes').remove(index) if index?
+                @dispatcher.trigger 'workspace:request-tool',
+                    type: 'marker'
 
             @dispatcher.on 'tool:set', (tool)=>
                 @tool = tool
@@ -71,8 +72,6 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
         onMouseUp: (ev) ->
             @dispatcher.trigger 'tool:release', d3.event, @tool
-
-        onObjectChanged: ->
 
         onNotesAdded: (rtEvent) ->
             _.each rtEvent.values, (note)->
