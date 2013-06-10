@@ -12,7 +12,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.1.0/tabletop.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/rickshaw/1.2.1/rickshaw.min.js"></script>
+  <script src="/javascripts/vendor/rickshaw.js"></script>
 
 
   <!-- Load the Realtime libraries. -->
