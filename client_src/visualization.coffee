@@ -65,7 +65,7 @@ define "visualization", ->
       @xAxis.render() if @xAxis?
    
   return {
-      initialize: (callback) -> 
-        window.Visualization = new RickshawVisualization
-        callback() if callback?
+    initialize: (callback) -> 
+      window.Visualization = new RickshawVisualization
+      callback() if callback?
   }
