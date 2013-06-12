@@ -1,5 +1,17 @@
 define "visualization", ->
 
+  parseLocation = (url) ->
+    result =
+      url: url.split('?')[0]
+      hash: url.split('?')[1].split('#')[1]
+      query: {}
+  
+    url.split('?')[1].split('#')[0].split('&').forEach (i) ->
+      i = i.split('=')
+      result.query[i[0]] = i[1]
+  
+    result
+
   class RickshawVisualization
     palette = new Rickshaw.Color.Palette( { scheme: 'spectrum2001' } );
     
