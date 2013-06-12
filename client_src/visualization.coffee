@@ -70,7 +70,6 @@ define "visualization", ->
     window.Visualization = new RickshawVisualization(data, labels) unless window.visualization
    
   return {
-    # TODO: You may have to add a callback pattern to this.
     initialize: (callback) ->
       url = parseLocation(window.location.toString())
       
