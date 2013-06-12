@@ -33,11 +33,12 @@ define "visualization", ->
       @xAxis = new Rickshaw.Graph.Axis.X(graph: @graph)
       @renderAll()
       
-      @hoverDetail = new Rickshaw.Graph.HoverDetail 
+      @hoverDetail = new Rickshaw.Graph.HoverDetail
         graph: @graph
-        xFormatter: -> (x) 
+        xFormatter: (x) -> 
           labels.x + ": " + x
-        yFormatter: -> (y) y
+        yFormatter: (y) ->
+          y
       
     renderAll: () ->
       @graph.render()
