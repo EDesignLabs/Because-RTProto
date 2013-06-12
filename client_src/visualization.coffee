@@ -18,7 +18,7 @@ define "visualization", ->
 
   class RickshawVisualization
     
-    constructor: (data) ->
+    constructor: (data, labels) ->
       data = [data] if data
       @workspace = document.querySelector ".workspace-container"
       @graph = new Rickshaw.Graph
@@ -32,6 +32,12 @@ define "visualization", ->
         element: document.getElementById("y-axis")
       @xAxis = new Rickshaw.Graph.Axis.X(graph: @graph)
       @renderAll()
+      
+      @hoverDetail = new Rickshaw.Graph.HoverDetail 
+        graph: @graph
+        xFormatter: -> (x) 
+          labels.x + ": " + x
+        yFormatter: -> (y) y
       
     renderAll: () ->
       @graph.render()
@@ -61,7 +67,7 @@ define "visualization", ->
       data: dataset.slice(1)
       color: palette.color()
       
-    window.Visualization = new RickshawVisualization(data) unless window.visualization
+    window.Visualization = new RickshawVisualization(data, labels) unless window.visualization
    
   return {
     # TODO: You may have to add a callback pattern to this.
