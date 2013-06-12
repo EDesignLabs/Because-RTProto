@@ -1,6 +1,6 @@
 define "visualization", ->
 
-  palette = new Rickshaw.Color.Palette( { scheme: 'spectrum2001' } );
+  palette = new Rickshaw.Color.Palette( { scheme: 'colorwheel' } );
   
   parseLocation = (url) ->
     result = {}
@@ -19,17 +19,19 @@ define "visualization", ->
   class RickshawVisualization
     
     constructor: (data) ->
+      data = [data]
       @workspace = document.querySelector ".workspace-container"
       @graph = new Rickshaw.Graph
         element: @workspace
         width: 780
         height: 600
-        series: new Rickshaw.Series([{ name: 'Data' }])
+        series: data || new Rickshaw.Series([{ name: 'Data' }])
       @yAxis = new Rickshaw.Graph.Axis.Y
         graph: @graph
         orientation: "left"
         element: document.getElementById("y-axis")
       @xAxis = new Rickshaw.Graph.Axis.X(graph: @graph)
+      @renderAll()
       
     renderAll: () ->
       @graph.render()
@@ -58,11 +60,18 @@ define "visualization", ->
       name: labels.y
       data: dataset.slice(1)
       color: palette.color()
+      
+    window.Visualization = new RickshawVisualization(data) unless window.visualization
    
   return {
+    # TODO: You may have to add a callback pattern to this.
     initialize: (callback) ->
-      url = parseLocation(window.location)
+      url = parseLocation(window.location.toString())
       
-      window.Visualization = new RickshawVisualization
+      if url.query.spreadsheet
+        fetchGoogleSpreadsheet url.query.spreadsheet
+      else
+        window.Visualization = new RickshawVisualization
+        
       callback() if callback?
   }
