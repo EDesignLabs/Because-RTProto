@@ -19,7 +19,7 @@ define "visualization", ->
   class RickshawVisualization
     
     constructor: (data) ->
-      data = [data]
+      data = [data] if data
       @workspace = document.querySelector ".workspace-container"
       @graph = new Rickshaw.Graph
         element: @workspace
