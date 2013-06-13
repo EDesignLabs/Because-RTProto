@@ -35,7 +35,10 @@
 <body>
   <div class="container control">
     <div class="row metadata">
-      <div class="span8">
+      <div class="span1 logo">
+      </div>
+
+      <div class="span7">
         <h1 class="title"></h1>
         <button class="display-context-creator btn">Change Context</button>
       </div>

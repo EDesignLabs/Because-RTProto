@@ -7,6 +7,17 @@ a {
 .control .btn-group-vertical .btn {
   width: 100%;
 }
+.control .logo {
+  min-height: 51px;
+  background-image: url("/images/logo.png");
+  background-position-y: 10px;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.control .title {
+  font-size: 20px;
+  line-height: 20px;
+}
 .metadata {
   margin-bottom: 5px;
   border-bottom: 1px solid #eee;
