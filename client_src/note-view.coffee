@@ -125,19 +125,19 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 @unhighlight()
 
         blink: ->
-            @noteRectElement.transition().attr('fill','white').duration(200)
-            @titleElement.transition().attr('fill','black').duration(200)
-            @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').delay(500).duration(200)
+            @noteRectElement?.transition().attr('fill','white').duration(200)
+            @titleElement?.transition().attr('fill','black').duration(200)
+            @noteRectElement?.transition().attr('fill',@model.get('color')?.getText() or 'gray').delay(500).duration(200)
             @titleElement.transition().attr('fill','white').delay(500).duration(200)
 
         highlight: ->
-            @noteRectElement.transition().attr('fill','white').duration(200)
-            @titleElement.transition().attr('fill','black').duration(200)
+            @noteRectElement?.transition().attr('fill','white').duration(200)
+            @titleElement?.transition().attr('fill','black').duration(200)
             @highlighted = yes
 
         unhighlight: ->
-            @noteRectElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').duration(200)
-            @titleElement.transition().attr('fill','white').duration(200)
+            @noteRectElement?.transition().attr('fill',@model.get('color')?.getText() or 'gray').duration(200)
+            @titleElement?.transition().attr('fill','white').duration(200)
             @highlighted = no
 
         render: ->

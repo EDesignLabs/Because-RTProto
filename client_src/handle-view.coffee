@@ -62,8 +62,6 @@ define ["d3view"], (D3View)->
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            target = d3.select ev.target
-
             if target.attr('data-object-id') is @model.id and target.attr('data-type') is 'handle-circle'
 
                 if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
@@ -134,15 +132,15 @@ define ["d3view"], (D3View)->
                 @unhighlight()
 
         blink: ->
-            @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
-            @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).delay(500).duration(200)
+            @circleElement?.transition().attr('fill','white').attr('r',6).duration(200)
+            @circleElement?.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).delay(500).duration(200)
 
         highlight: ->
-            @circleElement.transition().attr('fill','white').attr('r',6).duration(200)
+            @circleElement?.transition().attr('fill','white').attr('r',6).duration(200)
             @highlighted = yes
 
         unhighlight: ->
-            @circleElement.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).duration(200)
+            @circleElement?.transition().attr('fill',@model.get('color')?.getText() or 'gray').attr('r',5).duration(200)
             @highlighted = no
 
         render: ->

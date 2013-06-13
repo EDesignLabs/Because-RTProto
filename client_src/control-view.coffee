@@ -49,6 +49,7 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 creatorTitle.text "New Note"
 
             @dispatcher.on 'note:edit', (ev, model)=>
+                @editNoteButton.off 'click'
                 @editNoteButton.on 'click', {model:model}, _.bind @onEditNoteClick, @
 
                 creator = $("#note-creator")
