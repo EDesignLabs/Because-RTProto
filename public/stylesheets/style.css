@@ -126,6 +126,21 @@ a {
   height: 150px;
   background-repeat: no-repeat;
 }
+#note-creator .comments-header span.on {
+  display: none;
+}
+#note-creator .comments-header span.off {
+  display: inline;
+}
+#note-creator .comments-header.expanded span.on {
+  display: inline;
+}
+#note-creator .comments-header.expanded span.off {
+  display: none;
+}
+#comment-creator {
+  display: none;
+}
 #context-creator {
   display: none;
   position: absolute;

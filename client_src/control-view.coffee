@@ -15,6 +15,7 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
             @addNoteButton = $ "#add-note"
             @editNoteButton = $ "#edit-note"
             @addCommentButton = $ "#add-comment"
+            @showCommentToggle = $ ".comments-header"
 
             @dispatcher.on 'context:image-load', (url, width, height)=>
                 @backgroundWidth = width
@@ -34,6 +35,9 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
                 @addCommentButton.off 'click'
                 @editNoteButton.on 'click', {model:model}, _.bind @onEditNoteClick, @
                 @addCommentButton.on 'click', {model:model}, _.bind @onAddCommentClick, @
+                @showCommentToggle.on 'click', =>
+                    $('#comment-creator').slideDown()
+                    @showCommentToggle.toggleClass('expanded', true)
 
                 creator = $("#note-creator")
                 creatorTitle = $("#note-creator-title")
@@ -43,13 +47,16 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
                 thumbnail = creator.find '.thumbnail'
                 creator.find(".comments").empty()
 
-                if model.get('comments')
+                if model.get('comments')?.length > 0
+                    $(".comments-header .count").text model.get('comments').length + ' '
                     _.each model.get('comments').asArray(), (comment)->
-                        @addComment comment
+                        @addComment model, comment
                     , @
+                else
+                    $(".comments-header .count").text ''
 
                 @dispatcher.on 'note:add-comment', (model, comment)=>
-                    @addComment comment
+                    @addComment model, comment
 
                 creator.toggleClass 'add', no
                 creator.toggleClass 'edit', yes
@@ -60,7 +67,7 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
 
                 creator.css
                     'left': ev.x
-                    'top': ev.y
+                    'top': if ev.y < 200 then ev.y else 200
 
                 x = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10))
                 y = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10))
@@ -76,11 +83,24 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
                 creator.on 'hidden', (ev)=> @onModalHidden ev
 
             @dispatcher.on 'note:view', (ev, model)=>
+                @showCommentToggle.on 'click', =>
+                    $('#comment-creator').slideDown()
+                    @showCommentToggle.toggleClass('expanded', true)
+                @addCommentButton.on 'click', {model:model}, _.bind @onAddCommentClick, @
+
                 creator = $("#note-creator")
                 creatorTitle = $("#note-creator-title")
                 url = $(".view .url")
                 desc = $(".view .description")
                 creator.find(".comments").empty()
+
+                if model.get('comments')?.length > 0
+                    $(".comments-header .count").text model.get('comments').length + ' '
+                    _.each model.get('comments').asArray(), (comment)->
+                        @addComment model, comment
+                    , @
+                else
+                    $(".comments-header .count").text ''
 
                 url.text model.get('url').getText()
                 url.attr 'href', model.get('url').getText()
@@ -95,7 +115,7 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
 
                 creator.css
                     'left': ev.x
-                    'top': ev.y
+                    'top': if ev.y < 200 then ev.y else 200
 
                 x = (parseInt(model.get('x').getText(), 10) + parseInt(model.get('hx').getText(), 10))
                 y = (parseInt(model.get('y').getText(), 10) + parseInt(model.get('hy').getText(), 10))
@@ -108,12 +128,18 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
 
             @timer = setInterval (=> @dispatcher.trigger 'time:update'), 5000
 
-        addComment: (comment)->
+        addComment: (model, comment)->
             commentView = new CommentView
                 model: comment
                 dispatcher: @dispatcher
 
             $(".comments").append commentView.$el
+
+            if model.get('comments')?.length > 0
+                $(".comments-header .count").text model.get('comments').length + ' '
+            else
+                $(".comments-header .count").text ''
+
 
             commentView.render()
 
@@ -245,6 +271,8 @@ define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, Metadata
             $('#note-comment').val ''
 
             $('button.close-button').removeClass 'active'
+            $('#comment-creator').slideUp()
+            @showCommentToggle.toggleClass('expanded', false)
 
             @addNoteButton.off 'click'
             @editNoteButton.off 'click'
