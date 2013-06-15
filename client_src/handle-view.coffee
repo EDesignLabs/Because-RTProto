@@ -23,18 +23,18 @@ define ["d3view"], (D3View)->
 
         onHandleXChanged: (rtEvent)->
             if @lineElement
-                @lineElement.attr
+                @lineElement.transition().duration(200).attr
                     'x2': @model.get('hx').getText() || 200
 
-            @circleElement.attr
+            @circleElement.transition().duration(200).attr
                 'cx': @model.get('hx').getText() || 200
 
         onHandleYChanged: (rtEvent)->
             if @lineElement
-                @lineElement.attr
+                @lineElement.transition().duration(200).attr
                     'y2': @model.get('hy').getText() || 25
 
-            @circleElement.attr
+            @circleElement.transition().duration(200).attr
                 'cy': @model.get('hy').getText() || 25
 
         onColorChanged: (rtEvent)->

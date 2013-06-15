@@ -27,27 +27,6 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
 
                 @onAddNoteClick $ev
 
-            @dispatcher.on 'note:add', (ev, context)=>
-                @addNoteButton.on 'click', {d3ev:ev}, _.bind @onAddNoteClick, @
-
-                creator = $("#note-creator")
-                creatorTitle = $("#note-creator-title")
-
-                creator.toggleClass 'add', yes
-                creator.toggleClass 'edit', no
-                creator.toggleClass 'view', no
-
-                @centerThumbnail ev.x, ev.y
-
-                creator.modal
-                    'show': yes
-
-                creator.css
-                    'left': ev.x
-                    'top': ev.y
-
-                creatorTitle.text "New Note"
-
             @dispatcher.on 'note:edit', (ev, model)=>
                 @editNoteButton.off 'click'
                 @editNoteButton.on 'click', {model:model}, _.bind @onEditNoteClick, @
@@ -137,7 +116,9 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 el: @$el.find '.metadata'
 
             @toolbarView = new ToolbarView
-                model: @user
+                model:
+                    context: @context
+                    user: @user
                 dispatcher: @dispatcher
                 el: @$el.find '.toolbar'
 
