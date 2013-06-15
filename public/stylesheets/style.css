@@ -162,6 +162,29 @@ a {
 #authorizeButton[disabled] {
   display: none;
 }
+.comments {
+  margin: 0;
+}
+.comments li {
+  float: left;
+  width: 100%;
+  display: none;
+  padding-left: 10px;
+  border-bottom: 1px solid #eee;
+  list-style: none;
+  color: #fff;
+  font-size: 11px;
+}
+.comments li .display-name {
+  display: inline-block;
+  float: right;
+  margin: 0 5px;
+}
+.comments li .created {
+  display: inline-block;
+  float: right;
+  margin: 0 5px;
+}
 svg.marker {
   cursor: crosshair;
 }

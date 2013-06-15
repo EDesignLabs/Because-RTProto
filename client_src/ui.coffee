@@ -43,7 +43,7 @@ define ["realtime-client-utils", "collaborators-view", "workspace-view", "contro
       dispatcher: dispatcher
 
     workspaceView = new WorkspaceView
-      model: context
+      model: doc
       dispatcher: dispatcher
 
     controlView = new ControlView

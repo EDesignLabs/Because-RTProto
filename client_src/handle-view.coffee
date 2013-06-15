@@ -3,9 +3,11 @@ define ["d3view"], (D3View)->
         tagName: 'g'
 
         initialize: (options)->
+            @doc = options.doc
+
             @constructor.__super__.initialize.call @,options
-            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleXChanged, @
-            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleYChanged, @
+            @model.get('hx').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleChanged, @
+            @model.get('hy').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandleChanged, @
             @model.get('color').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onColorChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onTitleChanged, @
             @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
@@ -21,21 +23,17 @@ define ["d3view"], (D3View)->
 
             @highlighted = no
 
-        onHandleXChanged: (rtEvent)->
+        onHandleChanged: (rtEvent)->
             if @lineElement
-                @lineElement.transition().duration(200).attr
+                @lineElement.transition().attr
                     'x2': @model.get('hx').getText() || 200
-
-            @circleElement.transition().duration(200).attr
-                'cx': @model.get('hx').getText() || 200
-
-        onHandleYChanged: (rtEvent)->
-            if @lineElement
-                @lineElement.transition().duration(200).attr
                     'y2': @model.get('hy').getText() || 25
+                .duration(400)
 
-            @circleElement.transition().duration(200).attr
+            @circleElement.transition().attr
+                'cx': @model.get('hx').getText() || 200
                 'cy': @model.get('hy').getText() || 25
+            .duration(400)
 
         onColorChanged: (rtEvent)->
             @circleElement.attr
@@ -114,8 +112,11 @@ define ["d3view"], (D3View)->
                 if tool.type is 'move'
                     cx = @circleElement.attr 'cx'
                     cy = @circleElement.attr 'cy'
+
+                    @doc.getModel().beginCompoundOperation()
                     @model.get('hx').setText cx
                     @model.get('hy').setText cy
+                    @doc.getModel().endCompoundOperation()
 
                     @engaged = false
 

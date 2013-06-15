@@ -14,7 +14,9 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                 width: '100%'
                 height: '100%'
 
-            @data = @model.get 'data'
+            @context = @model.getModel().getRoot().get 'context'
+
+            @data = @context.get 'data'
 
             @contextView = new ContextView
                 model: @data.get 'image'
@@ -22,8 +24,8 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                 dispatcher: @dispatcher
                 insert: ':first-child'
 
-            @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
-            @model.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind @onNotesRemoved, @
+            @context.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onNotesAdded, @
+            @context.get('notes').addEventListener gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind @onNotesRemoved, @
 
             @d3el.on 'mousedown', _.bind @onMouseDown, @
             @d3el.on 'mousemove', _.bind @onMouseMove, @
@@ -35,8 +37,8 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                     height: @$el.width() / (width/height)
 
             @dispatcher.on 'note:delete', (model)=>
-                index = @model.get('notes').indexOf(model)
-                @model.get('notes').remove(index) if index?
+                index = @context.get('notes').indexOf(model)
+                @context.get('notes').remove(index) if index?
                 @dispatcher.trigger 'workspace:request-tool',
                     type: 'marker'
 
@@ -48,7 +50,7 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
             @dispatcher.on 'tool:engage', (ev, tool)=>
                 if @tool.type is 'marker' and ev.target is @contextView.el
-                    @dispatcher.trigger 'marker:add', d3.event, @model
+                    @dispatcher.trigger 'marker:add', d3.event, @context
 
             @dispatcher.on 'context:image-load', (url, width, height)=>
                 _.defer _.bind ->
@@ -60,7 +62,7 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
                         viewBox: "0 0 #{viewWidth} #{viewHeight}"
                 , @
 
-            _.each @model.get('notes').asArray(), (note)->
+            _.each @context.get('notes').asArray(), (note)->
                 @addNote note
             , @
 
@@ -85,6 +87,7 @@ define ['context-view', 'note-view', 'marker-view'], (ContextView, NoteView, Mar
 
         addNote: (note) ->
             noteView = new NoteView
+                doc: @model
                 model: note
                 parent: @d3el
                 dispatcher: @dispatcher

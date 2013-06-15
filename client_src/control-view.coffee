@@ -1,4 +1,4 @@
-define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
+define ['toolbar-view', 'metadata-view', 'comment-view'], (ToolbarView, MetadataView, CommentView)->
     ControlView = Backbone.View.extend
         className: 'span12'
 
@@ -14,6 +14,7 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
 
             @addNoteButton = $ "#add-note"
             @editNoteButton = $ "#edit-note"
+            @addCommentButton = $ "#add-comment"
 
             @dispatcher.on 'context:image-load', (url, width, height)=>
                 @backgroundWidth = width
@@ -28,8 +29,11 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 @onAddNoteClick $ev
 
             @dispatcher.on 'note:edit', (ev, model)=>
+                @dispatcher.off 'note:add-comment'
                 @editNoteButton.off 'click'
+                @addCommentButton.off 'click'
                 @editNoteButton.on 'click', {model:model}, _.bind @onEditNoteClick, @
+                @addCommentButton.on 'click', {model:model}, _.bind @onAddCommentClick, @
 
                 creator = $("#note-creator")
                 creatorTitle = $("#note-creator-title")
@@ -37,6 +41,15 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 url = $("#url")
                 desc = $("#desc")
                 thumbnail = creator.find '.thumbnail'
+                creator.find(".comments").empty()
+
+                if model.get('comments')
+                    _.each model.get('comments').asArray(), (comment)->
+                        @addComment comment
+                    , @
+
+                @dispatcher.on 'note:add-comment', (model, comment)=>
+                    @addComment comment
 
                 creator.toggleClass 'add', no
                 creator.toggleClass 'edit', yes
@@ -60,11 +73,14 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 url.val  model.get('url').getText()
                 desc.val model.get('desc').getText()
 
+                creator.on 'hidden', (ev)=> @onModalHidden ev
+
             @dispatcher.on 'note:view', (ev, model)=>
                 creator = $("#note-creator")
                 creatorTitle = $("#note-creator-title")
                 url = $(".view .url")
                 desc = $(".view .description")
+                creator.find(".comments").empty()
 
                 url.text model.get('url').getText()
                 url.attr 'href', model.get('url').getText()
@@ -88,6 +104,19 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
 
                 creatorTitle.text model.get('title').getText()
 
+                creator.on 'hidden', (ev)=> @onModalHidden ev
+
+            @timer = setInterval (=> @dispatcher.trigger 'time:update'), 5000
+
+        addComment: (comment)->
+            commentView = new CommentView
+                model: comment
+                dispatcher: @dispatcher
+
+            $(".comments").append commentView.$el
+
+            commentView.render()
+
         centerThumbnail: (x, y)->
             thumbnail = $("#note-creator .thumbnail")
 
@@ -98,13 +127,13 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
 
             width = svgWidth #- 150 * proportion
             height = svgHeight #- 150 * proportion
-            thumbnailX = x - 75
-            thumbnailY = y - 75
+            thumbnailX = (x - 75) * -1
+            thumbnailY = (y - 75) * -1
 
             thumbnail.css 'background-image', "url('#{@backgroundUrl}')"
             thumbnail.css 'background-size', "#{svgWidth}px #{svgHeight}px"
-            thumbnail.css 'background-position-x', "-#{thumbnailX}px"
-            thumbnail.css 'background-position-y', "-#{thumbnailY}px"
+            thumbnail.css 'background-position-x', "#{thumbnailX}px"
+            thumbnail.css 'background-position-y', "#{thumbnailY}px"
 
 
         render: (options)->
@@ -155,6 +184,7 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
                 selected: @model.getModel().createString 'false'
                 userId: @model.getModel().createString if @user.isOwner() then '' else @user.userId
                 color: @model.getModel().createString if @user.isOwner() then 'gray' else @user.color
+                comments: @model.getModel().createList()
 
             @notes.push newNote
 
@@ -187,5 +217,41 @@ define ['toolbar-view', 'metadata-view'], (ToolbarView, MetadataView)->
 
             creator.modal 'hide'
             @editNoteButton.off 'click'
+            @addCommentButton.off 'click'
+            @dispatcher.off 'note:add-comment'
 
+        onAddCommentClick: (ev)->
+            model = ev.data.model
+            creator = $("#comment-creator")
+
+            comment = @model.getModel().createMap
+                body: @model.getModel().createString $('#note-comment').val()
+                userId: @model.getModel().createString if @user.isOwner() then '' else @user.userId
+                displayName: @model.getModel().createString @user.displayName
+                photoUrl: @model.getModel().createString @user.photoUrl
+                color: @model.getModel().createString @user.color
+                created: @model.getModel().createString (new Date()).toISOString()
+
+            unless model.get 'comments'
+                model.set 'comments', @model.getModel().createList()
+
+            model.get('comments').push comment
+            $('#note-comment').val ''
+
+        onModalHidden: (ev)->
+            $("#title").val ''
+            $("#desc").val ''
+            $("#url").val ''
+            $('#note-comment').val ''
+
+            $('button.close-button').removeClass 'active'
+
+            @addNoteButton.off 'click'
+            @editNoteButton.off 'click'
+            @addCommentButton.off 'click'
+            @dispatcher.off 'note:add-comment'
+
+            @dispatcher.trigger 'tool:set',
+                type: 'marker'
+                user: @user
 
