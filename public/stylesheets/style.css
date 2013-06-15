@@ -18,18 +18,18 @@ a {
   font-size: 20px;
   line-height: 20px;
 }
+.toolbar .owner {
+  padding: 10px 0 0 0;
+}
+.toolbar .display-context-creator {
+  display: none;
+}
 .metadata {
   margin-bottom: 5px;
   border-bottom: 1px solid #eee;
 }
 .metadata div {
   position: relative;
-}
-.metadata .display-context-creator {
-  display: none;
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 .metadata .description {
   position: absolute;
@@ -85,7 +85,7 @@ a {
   display: block;
 }
 #note-creator.add #add-note {
-  display: block;
+  display: inline-block;
 }
 #note-creator.add #edit-note {
   display: none;
@@ -103,7 +103,7 @@ a {
   display: none;
 }
 #note-creator.edit #edit-note {
-  display: block;
+  display: inline-block;
 }
 #note-creator.view .edit {
   display: none;
@@ -161,6 +161,29 @@ a {
 }
 #authorizeButton[disabled] {
   display: none;
+}
+.comments {
+  margin: 0;
+}
+.comments li {
+  float: left;
+  width: 100%;
+  display: none;
+  padding-left: 10px;
+  border-bottom: 1px solid #eee;
+  list-style: none;
+  color: #fff;
+  font-size: 11px;
+}
+.comments li .display-name {
+  display: inline-block;
+  float: right;
+  margin: 0 5px;
+}
+.comments li .created {
+  display: inline-block;
+  float: right;
+  margin: 0 5px;
 }
 svg.marker {
   cursor: crosshair;

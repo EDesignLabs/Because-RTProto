@@ -3,6 +3,8 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
         tagName: 'g'
 
         initialize: (options)->
+            @doc = options.doc
+
             @constructor.__super__.initialize.call @,options
             @model.get('x').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
             @model.get('y').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onHandlePositionChanged, @
@@ -11,6 +13,9 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_INSERTED, _.bind @onDescriptionChanged, @
             @model.get('title').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onTitleChanged, @
             @model.get('desc').addEventListener gapi.drive.realtime.EventType.TEXT_DELETED, _.bind @onDescriptionChanged, @
+
+            @model.get('comments')?.addEventListener gapi.drive.realtime.EventType.VALUES_ADDED, _.bind @onCommentsAdded, @
+            @model.get('comments')?.addEventListener gapi.drive.realtime.EventType.VALUES_REMOVED, _.bind @onCommentsRemoved, @
 
             @dispatcher.on 'tool:engage', _.bind @onToolEngage, @
             @dispatcher.on 'tool:move', _.bind @onToolMove, @
@@ -21,8 +26,10 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
             @highlighted is no
 
+        # model callbacks
+
         onHandlePositionChanged: (rtEvent)->
-            @d3el.attr
+            @d3el.transition().duration(400).attr
                 'transform': "matrix(1 0 0 1 #{@model.get('x').getText()} #{@model.get('y').getText()})"
 
         onTitleChanged: (rtEvent)->
@@ -55,10 +62,22 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
             @noteRectElement.attr
                 'fill': @model.get('color').getText() || 'gray'
 
+        onCommentsAdded: (rtEvent)->
+            _.each rtEvent.values, (comment)->
+                @addComment comment
+            , @
+
+        onCommentsRemoved: (rtEvent)->
+            _.each rtEvent.values, (comment)->
+                @removeComment comment
+            , @
+
+        # view callbacks
+
         onToolEngage: (ev, tool)->
             target = d3.select ev.target
 
-            if target.attr('data-object-id') is @model.id and (target.attr('data-type') is 'note-rect' or target.attr('data-type') is 'title')
+            if target.attr('data-object-id') is @model.id and (target.attr('data-type') in ['note-rect', 'title', 'comment-rect', 'comment-count'])
 
                 if @model.get('userId').getText() isnt '' and @model.get('userId').getText() isnt tool.user.userId and not tool.user.isOwner()
                     @dispatcher.trigger 'note:view', d3.event, @model if tool.type is 'marker'
@@ -107,8 +126,10 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
                 if tool.type is 'move'
                     matrix = @d3el.attr('transform').slice(7, -1).split(' ')
+                    @doc.getModel().beginCompoundOperation()
                     @model.get('x').setText matrix[4]
                     @model.get('y').setText matrix[5]
+                    @doc.getModel().endCompoundOperation()
 
                     @engaged = false
 
@@ -123,6 +144,43 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
         onNoteUnhighlight: (model)->
             if model.id is @model.id
                 @unhighlight()
+
+        # actions
+
+        updateCommentCount: ->
+            if @model.get('comments')?.length > 0
+                unless @commentRectElement
+                    @commentRectElement = @d3el.append 'rect'
+                    @commentRectElement.attr
+                        'width': 20
+                        'height': 25
+                        'x': -20
+                        'fill': 'white'
+                        'stroke': 'black'
+                        'data-type': 'comment-rect'
+                        'data-object-id': @model.id
+
+                unless @commentCountElement
+                    @commentCountElement = @d3el.append 'text'
+                    @commentCountElement.attr
+                        'width': 20
+                        'height': 25
+                        'x': -15
+                        'y': 17
+                        'font-size': 10
+                        'fill': 'black'
+                        'stroke': 'none'
+                        'data-type': 'comment-count'
+                        'data-object-id': @model.id
+
+                @commentCountElement.text @model.get('comments').length + ''
+
+        addComment: (comment)->
+            @updateCommentCount()
+            @dispatcher.trigger 'note:add-comment', @model, comment
+
+        removeComment: (comment)->
+            @dispatcher.trigger 'note:remove-comment', @model, comment
 
         blink: ->
             @noteRectElement?.transition().attr('fill','white').duration(200)
@@ -155,6 +213,7 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
 
             if not @handleView
                 @handleView = new HandleView
+                    doc: @doc
                     model: @model
                     parent: @d3el
                     dispatcher: @dispatcher
@@ -165,6 +224,8 @@ define ['d3view', 'handle-view'], (D3View, HandleView)->
                 @renderTitle(abridgedTitle)
             else if @model.get('desc').getText().replace(/^\s+|\s+$/g, "") isnt ''
                 @renderTitle(abridgedDesc)
+
+            @updateCommentCount()
 
         renderTitle: (title)->
             unless @noteRectElement

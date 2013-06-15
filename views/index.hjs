@@ -12,6 +12,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.1.0/tabletop.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js"></script>
   <script src="/javascripts/vendor/rickshaw.js"></script>
 
 
@@ -40,60 +41,76 @@
 
       <div class="span7">
         <h1 class="title"></h1>
-        <button class="display-context-creator btn">Change Context</button>
       </div>
 
       <div class="span4">
         <article class="description"></article>
       </div>
 
-      <div id="note-creator" class="modal hide fade add">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h3 id="note-creator-title">New Note</h3>
-        </div>
-        <div class="modal-body">
-          <div class="thumbnail"></div>
-          <div class="edit">
-            <label for="title">Title</label><input id="title" name="title">
-            <label for="url">URL</label><input id="url" name="url">
-            <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
-          </div>
-          <div class="view">
-            <p><a class="url" target="_blank"></a></p>
-            <article class="description"></article>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-          <button id="add-note" class="btn btn-primary">Save</button>
-          <button id="edit-note" class="btn btn-primary">Save</button>
-        </div>
-      </div>
-
-      <div id="context-creator" class="modal hide slide context">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h3 class="context-creator-title">Change Context</h3>
-        </div>
-        <div class="modal-body">
-          <label for="context-title">Title/Question</label> <input id="context-title" name="title">
-          <label for="context-image">Image URL</label> <input id="context-image" name="url">
-          <label for="context-desc">Description</label> <textarea id="context-desc" name="desc"></textarea>
-        </div>
-        <div class="modal-footer">
-          <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-          <button class="btn save-context">Save</button>
-        </div>
-      </div>
-
     </div>
 
     <div class="row">
-      <div data-toggle="buttons-radio" class="span1 toolbar btn-group btn-group-vertical">
-        <button id="marker-tool" class="btn">Marker</button>
-        <button id="move-tool" class="btn">Move</button>
-        <button id="delete-tool" class="btn">Delete</button>
+      <div data-toggle="buttons-radio" class="span1 toolbar">
+        <div class="btn-group btn-group-vertical user">
+          <button id="marker-tool" class="btn">Marker</button>
+          <button id="move-tool" class="btn">Move</button>
+          <button id="delete-tool" class="btn">Delete</button>
+        </div>
+        <div class="owner">
+          <button class="display-context-creator btn">Context</button>
+        </div>
+
+        <div id="note-creator" class="modal hide fade add">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="note-creator-title"></h3>
+          </div>
+          <div class="modal-body">
+            <div class="thumbnail"></div>
+            <div class="edit">
+              <label for="title">Title</label><input id="title" name="title">
+              <label for="url">URL</label><input id="url" name="url">
+              <label for="desc">Description</label><textarea id="desc" name="desc"></textarea>
+            </div>
+            <div class="view">
+              <p><a class="url" target="_blank"></a></p>
+              <article class="description"></article>
+            </div>
+            <h4>Comments</h4>
+            <ul class="comments">
+            </ul>
+            <div id="comment-creator">
+              <div>
+                <textarea id="note-comment" name="note-comment"></textarea>
+              </div>
+              <div class="btn-group">
+                <button id="add-comment" class="btn">Submit</button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn close-button" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button id="add-note" class="btn btn-primary">Save</button>
+            <button id="edit-note" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+
+        <div id="context-creator" class="modal hide slide context">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 class="context-creator-title">Change Context</h3>
+          </div>
+          <div class="modal-body">
+            <label for="context-title">Title/Question</label> <input id="context-title" name="title">
+            <label for="context-image">Image URL</label> <input id="context-image" name="url">
+            <label for="context-desc">Description</label> <textarea id="context-desc" name="desc"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn close" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn save-context btn-primary">Save</button>
+          </div>
+        </div>
+
       </div>
       <div class="span10 workspace-container">
       </div>

@@ -12,7 +12,7 @@ define ["realtime-client-utils", "collaborators-view", "workspace-view", "contro
     data = model.createMap
       title: model.createString "Title or question"
       desc: model.createString "Instuctions or description"
-      image: model.createString "http://developers.mozilla.org/files/2917/fxlogo.png"
+      image: model.createString "/images/splash.png"
       spreadsheet: model.createString "https://docs.google.com/spreadsheet/pub?key=0Ar2Io2uAtw9TdEFvb2t5U3BiZDhQRlNSRjRTY3Q2Rmc&output=html"
     context = model.createMap
       notes: notes
@@ -43,7 +43,7 @@ define ["realtime-client-utils", "collaborators-view", "workspace-view", "contro
       dispatcher: dispatcher
 
     workspaceView = new WorkspaceView
-      model: context
+      model: doc
       dispatcher: dispatcher
 
     controlView = new ControlView
