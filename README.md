@@ -1,4 +1,4 @@
-[![Stories in Ready](http://badge.waffle.io/EDesignLabs/Because-RTProto.png)](http://waffle.io/EDesignLabs/Because-RTProto)  
+[![Stories in Ready](https://badge.waffle.io/EDesignLabs/Because-RTProto.png)](http://waffle.io/EDesignLabs/Because-RTProto)  
 Because Real-Time Prototype
 ===========================
 
