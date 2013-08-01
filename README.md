@@ -2,13 +2,13 @@
 Because Real-Time Prototype
 ===========================
 
-Almost entirely made for the lulz.
+Because allows teachers to take a chart or dynamically generate interactive visualizations from  spreadsheet data an interactive and collaborative medium. It enables students to improve their understanding of charts and graphs by visualizing real world data sets and annotating them with important events. Because also encourages students to analyze the cause and effect relationship between events and the data being visualized.
 
 Set Up
 ------
 
 * Clone this repo: `git clone git://whatever/the/path/is`
-* Have the heroku command line tools installed.
+* Have the Heroku command line tools installed.
 * Create a new heroku app: `heroku apps:create`
 * Get a Google API key for their Real Time Drive api: https://code.google.com/apis/console
  * It's helpful to make a Client ID for both your herokuapps subdomain and localhost
